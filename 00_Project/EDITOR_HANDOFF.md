@@ -6,6 +6,12 @@
 
 `Backend Engineer Handbook`
 
+Репозиторий:
+
+```text
+https://github.com/EugenTovarchi/Backend-Engineer-Handbook
+```
+
 Подзаголовок:
 
 > Понимание технологий через путешествие одного запроса.
@@ -60,6 +66,12 @@ PROJECT_STATUS
   - заменены Obsidian wiki-links на Markdown-ссылки;
   - удалены блоки `Когда не нужно уходить глубже`;
   - унифицирована терминология.
+
+Commit первого редакторского прохода:
+
+```text
+167f69d58af98e074966532fd3ee246e9327e051
+```
 
 ## Что находится в Review
 
