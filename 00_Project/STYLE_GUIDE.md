@@ -36,10 +36,11 @@
 Пример:
 
 ```md
-[Kestrel](../02_Entry_Layer/01_Kestrel.md)
-[Nginx](../02_Entry_Layer/02_Nginx.md)
-[Docker Networking](../10_Docker/05_Docker_Networking.md)
-[Reverse Proxy](../02_Entry_Layer/03_Reverse_Proxy.md)
+[Kestrel](../02_ASPNET_Core_Request_Pipeline/01_Kestrel_ASPNET_Core_Boundary.md)
+[Middleware Pipeline](../02_ASPNET_Core_Request_Pipeline/03_Middleware_Pipeline.md)
+[Routing](../02_ASPNET_Core_Request_Pipeline/04_Routing_Endpoint_Selection.md)
+[Nginx](../04_Production_Entry_Layer/02_Nginx.md)
+[Docker Networking](../04_Production_Entry_Layer/09_Docker_Networking.md)
 ```
 
 Если целевая глава ещё не создана, ссылку всё равно можно оставить на планируемый путь, но при финальной редактуре модуля нужно проверить, что ссылки не ведут в никуда.

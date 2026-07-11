@@ -440,3 +440,37 @@ JWT, access token, refresh token, OAuth 2.0, OpenID Connect, ASP.NET Core Identi
 3. Модуль IV — Production Entry Layer.
 
 Модуль II объясняет, где authentication и authorization находятся в pipeline, но не превращается в модуль про JWT, refresh token, OAuth/OIDC, ASP.NET Core Identity или архитектуру AuthService.
+
+---
+
+# Decision 017
+
+Статус
+
+Accepted
+
+Дата
+
+2026-07-11
+
+Решение
+
+ASP.NET Core Request Pipeline не заменяет остальные темы ASP.NET Core.
+
+Потерянный при перестройке scope восстанавливается отдельным Модулем V `ASP.NET Core Web API и инфраструктура приложения`.
+
+Модуль V будет посвящён Web API execution и инфраструктуре приложения.
+
+Controllers, Minimal APIs, Filters, Model Binding, Validation, ProblemDetails, Dependency Injection, Configuration, Hosted Services, Health Checks, API Versioning, OpenAPI и Rate Limiting остаются обязательной частью книги.
+
+Текущая работа не создаёт главы Модуля V.
+
+CORS остаётся в Review до утверждения структуры Модуля V.
+
+Причина
+
+Request Pipeline объясняет движение `HttpContext` до endpoint, но не раскрывает внутренний Web API execution, связывание входных данных, валидацию, DI, конфигурацию и остальные стандартные процессы ASP.NET Core приложения.
+
+Последствия
+
+Модуль II остаётся сфокусированным на pipeline от Kestrel до endpoint. Web API execution и инфраструктурные возможности ASP.NET Core будут разобраны позже отдельным модулем, без потери этих тем из roadmap.

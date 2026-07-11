@@ -84,7 +84,7 @@ Commit первого редакторского прохода:
 - Использование компактного горизонтального индикатора прогресса.
 - Отказ от большой карты модуля в каждой главе.
 - Финальное утверждение Модуля I пользователем.
-- Переход к следующему модулю после финального review Модуля I.
+- CORS как кандидат для будущего Модуля V.
 
 ## Текущий модуль
 
@@ -94,7 +94,12 @@ Commit первого редакторского прохода:
 Модуль II. ASP.NET Core Request Pipeline: от Kestrel до Endpoint
 ```
 
-Текущий статус: первичный черновик написан, следующим этапом является редакторская проверка результата в рабочем чате.
+Текущий статус:
+
+```text
+Первичный черновик Модуля II создан.
+Выполняется корректирующий проход после технического review.
+```
 
 Цель модуля — объяснить, что происходит после того, как HTTP-запрос достиг .NET-приложения:
 
@@ -130,12 +135,14 @@ Kestrel → HttpContext → Middleware → Routing → Authentication → Author
 - Полная authentication-система не удалена из книги и будет разобрана в Модуле III.
 - JWT, access token, refresh token, OAuth 2.0, OpenID Connect, ASP.NET Core Identity, хранение пользователей и AuthService относятся к Модулю III.
 - Nginx, Reverse Proxy, Load Balancer, API Gateway, YARP, Forwarded Headers, TLS termination и Docker Networking относятся к Модулю IV.
+- Controllers, Minimal APIs, Filters, Model Binding, Validation, ProblemDetails, Dependency Injection, Configuration, Hosted Services, Health Checks, API Versioning, OpenAPI и Rate Limiting восстановлены как scope будущего Модуля V.
 
 Последовательность ближайших модулей:
 
 1. Модуль II — ASP.NET Core Request Pipeline.
 2. Модуль III — Аутентификация и авторизация.
 3. Модуль IV — Production Entry Layer.
+4. Модуль V — ASP.NET Core Web API и инфраструктура приложения.
 
 ## Как продолжать работу
 

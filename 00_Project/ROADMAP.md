@@ -30,6 +30,8 @@ ASP.NET Core
 Доставка в production
 ```
 
+Эта схема показывает архитектурные слои production-системы, а не обязательный порядок изучения модулей. В книге ASP.NET Core Request Pipeline рассматривается раньше Production Entry Layer, потому что он является прямым продолжением финала Модуля I.
+
 Новые темы добавляются туда, где они естественно отвечают на инженерный вопрос.
 
 ---
@@ -106,7 +108,33 @@ ASP.NET Core
 
 ---
 
-## Часть V. C# и CLR
+## Модуль V. ASP.NET Core Web API и инфраструктура приложения
+
+Цель — разобрать, как ASP.NET Core превращает выбранный endpoint в полноценный Web API: получает входные данные, проверяет их, вызывает application code, формирует стандартный HTTP response и предоставляет инфраструктуру приложения.
+
+Предварительный состав:
+
+1. Controllers vs Minimal APIs
+2. MVC и endpoint execution model
+3. Filters и Endpoint Filters
+4. Model Binding
+5. Validation
+6. ProblemDetails и обработка ошибок API
+7. Dependency Injection
+8. Service Lifetimes: Transient, Scoped, Singleton
+9. Configuration и Options Pattern
+10. Logging в ASP.NET Core
+11. Hosted Services / BackgroundService
+12. Health Checks
+13. API Versioning
+14. Swagger / OpenAPI
+15. Rate Limiting
+
+Review: CORS найден в пользовательских конспектах и остаётся кандидатом для Модуля V до утверждения структуры этого модуля.
+
+---
+
+## Часть VI. C# и CLR
 
 1. CLR / JIT / AOT
 2. Value Types vs Reference Types
@@ -135,7 +163,7 @@ ASP.NET Core
 
 ---
 
-## Часть VI. Данные и базы данных
+## Часть VII. Данные и базы данных
 
 1. SQL база для backend-разработчика
 2. PostgreSQL
@@ -165,7 +193,7 @@ ASP.NET Core
 
 ---
 
-## Часть VII. Архитектура
+## Часть VIII. Архитектура
 
 1. Monolith
 2. Modular Monolith
@@ -189,7 +217,7 @@ ASP.NET Core
 
 ---
 
-## Часть VIII. Интеграции и distributed systems
+## Часть IX. Интеграции и distributed systems
 
 1. REST как базовый способ общения сервисов
 2. gRPC
@@ -212,7 +240,7 @@ ASP.NET Core
 
 ---
 
-## Часть IX. Observability
+## Часть X. Observability
 
 1. Что такое Observability
 2. Logs / Metrics / Traces
@@ -233,7 +261,7 @@ ASP.NET Core
 
 ---
 
-## Часть X. Storage и файлы
+## Часть XI. Storage и файлы
 
 1. S3 / MinIO
 2. Pre-signed URLs
@@ -243,7 +271,7 @@ ASP.NET Core
 
 ---
 
-## Часть XI. Docker и окружение
+## Часть XII. Docker и окружение
 
 1. Docker basics для backend-разработчика
 2. Dockerfile
@@ -256,7 +284,7 @@ ASP.NET Core
 
 ---
 
-## Часть XII. CI/CD и доставка
+## Часть XIII. CI/CD и доставка
 
 1. Что такое CI
 2. Что такое CD
@@ -275,7 +303,7 @@ ASP.NET Core
 
 ---
 
-## Часть XIII. Kubernetes для backend-разработчика
+## Часть XIV. Kubernetes для backend-разработчика
 
 Без DevOps-глубины. Цель — понимать, что происходит с backend-приложением в Kubernetes.
 
@@ -291,7 +319,7 @@ ASP.NET Core
 
 ---
 
-## Часть XIV. Практика проектов
+## Часть XV. Практика проектов
 
 1. DirectoryService
 2. FileService
@@ -315,12 +343,13 @@ ASP.NET Core
 2. Модуль II — ASP.NET Core Request Pipeline
 3. Модуль III — Аутентификация и авторизация
 4. Модуль IV — Production Entry Layer
-5. async/await + ThreadPool
-6. SemaphoreSlim + Task.WhenAll
-7. PostgreSQL Locks / FOR UPDATE
-8. RabbitMQ / Outbox
-9. gRPC
-10. Kafka vs RabbitMQ
-11. Observability stack
-12. CI/CD
-13. PostgreSQL vs MS SQL
+5. Модуль V — ASP.NET Core Web API и инфраструктура приложения
+6. async/await + ThreadPool
+7. SemaphoreSlim + Task.WhenAll
+8. PostgreSQL Locks / FOR UPDATE
+9. RabbitMQ / Outbox
+10. gRPC
+11. Kafka vs RabbitMQ
+12. Observability stack
+13. CI/CD
+14. PostgreSQL vs MS SQL

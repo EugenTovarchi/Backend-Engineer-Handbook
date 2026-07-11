@@ -54,7 +54,7 @@
 - [Полный ASP.NET Core Request Pipeline](../02_ASPNET_Core_Request_Pipeline/08_Full_ASPNET_Core_Request_Pipeline.md)
 - [Nginx](../04_Production_Entry_Layer/02_Nginx.md)
 - [Reverse Proxy](../04_Production_Entry_Layer/03_Reverse_Proxy.md)
-- [PostgreSQL](../05_Data/02_PostgreSQL.md)
+- [PostgreSQL](../07_Data/02_PostgreSQL.md)
 
 ---
 
