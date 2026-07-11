@@ -115,7 +115,7 @@ app.Use(async (context, next) =>
 });
 ```
 
-`Run` добавляет terminal middleware (завершающий middleware — компонент, который не вызывает следующий шаг):
+`Run` регистрирует terminal delegate (завершающий делегат — обработчик, после которого pipeline дальше не идёт):
 
 ```csharp
 app.Run(async context =>
@@ -124,7 +124,9 @@ app.Run(async context =>
 });
 ```
 
-`Map` создаёт ветку pipeline по условию, чаще всего по path:
+Любой middleware фактически становится terminal, если он не вызывает `next`.
+
+`Map` создаёт branch (ветку pipeline) по path prefix:
 
 ```csharp
 app.Map("/health", healthApp =>
@@ -136,6 +138,12 @@ app.Map("/health", healthApp =>
 });
 ```
 
+Краткое сравнение:
+
+- `Map` ветвится по path prefix, например `/health`;
+- `MapWhen` ветвится по predicate, например по header или query string;
+- `UseWhen` временно отправляет request в branch и затем может вернуться в основную цепочку.
+
 ---
 
 ## Пример логирования времени
@@ -145,10 +153,16 @@ app.Use(async (context, next) =>
 {
     var startedAt = Stopwatch.GetTimestamp();
 
-    await next(context);
-
-    var elapsed = Stopwatch.GetElapsedTime(startedAt);
-    Console.WriteLine($"{context.Request.Path} took {elapsed.TotalMilliseconds} ms");
+    try
+    {
+        await next(context);
+    }
+    finally
+    {
+        var elapsed = Stopwatch.GetElapsedTime(startedAt);
+        Console.WriteLine(
+            $"{context.Request.Path} took {elapsed.TotalMilliseconds} ms");
+    }
 });
 ```
 
@@ -165,6 +179,8 @@ after next -> response возвращается наружу
 
 **Short-circuiting (досрочное завершение — ситуация, когда middleware формирует response и не вызывает следующий компонент)** используется для ошибок, redirects, static files, health checks и других сценариев.
 
+Практическое правило: после начала отправки response нельзя безопасно менять status code и headers. Middleware не должен сначала записывать response, а затем бездумно вызывать `next`. Для диагностики есть `HttpResponse.HasStarted`.
+
 Пример:
 
 ```csharp
@@ -180,6 +196,18 @@ app.Use(async (context, next) =>
     await next(context);
 });
 ```
+
+Static files могут быть источником путаницы:
+
+```text
+UseStaticFiles
+  → Static File Middleware
+
+MapStaticAssets
+  → endpoint-based static assets
+```
+
+В этой главе важно только различать middleware, которое может завершить request до routing, и endpoint-based assets, которые участвуют в endpoint routing.
 
 Endpoint в таком сценарии не выполняется.
 
@@ -294,11 +322,13 @@ Middleware pipeline — это цепочка компонентов, через
 - Middleware получает `HttpContext`.
 - `RequestDelegate` представляет следующий шаг.
 - `Use` может вызвать `next`.
-- `Run` завершает pipeline.
-- `Map` создаёт ветку.
+- `Run` регистрирует terminal delegate.
+- Middleware становится terminal, если не вызывает `next`.
+- `Map`, `MapWhen` и `UseWhen` создают разные виды ветвления.
 - Код до `next` — путь request внутрь.
 - Код после `next` — путь response наружу.
 - Short-circuiting завершает request раньше endpoint.
+- После `Response.HasStarted` нельзя безопасно менять status code и headers.
 - Порядок middleware критичен.
 
 ---
