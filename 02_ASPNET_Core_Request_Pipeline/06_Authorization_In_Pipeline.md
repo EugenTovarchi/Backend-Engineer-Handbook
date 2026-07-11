@@ -178,7 +178,7 @@ app.MapGet("/api/files/{id}", (string id) => Results.Ok())
 Challenge (запрос аутентификации):
 
 ```text
-пользователь не установлен или credentials невалидны
+пользователь не установлен или учётные данные невалидны
 ```
 
 обычно:
@@ -234,7 +234,7 @@ flowchart TD
 
 Ошибка: путать `401` и `403`.  
 Почему неверно: это разные причины отказа.  
-Как правильно: `401` — типичный Bearer API response на challenge без валидной identity, `403` — типичный response на forbid для установленного пользователя без нужных прав.
+Как правильно: `401` — типичный HTTP-ответ Bearer API на challenge без валидной личности пользователя, `403` — типичный HTTP-ответ на forbid для установленного пользователя без нужных прав.
 
 ---
 
@@ -275,7 +275,7 @@ Authentication устанавливает пользователя. Authorizatio
 
 ## Ответ для собеседования
 
-Authorization в ASP.NET Core pipeline проверяет, разрешено ли пользователю выполнить выбранный endpoint. Обычно routing сначала выбирает endpoint, authentication пытается установить `HttpContext.User`, а `UseAuthorization` читает user и endpoint metadata: `[Authorize]`, policies, `AllowAnonymous` или `RequireAuthorization`. Если защищённый endpoint требует аутентифицированного пользователя, а identity нет, authorization инициирует challenge; для Bearer API это обычно `401`. Если identity есть, но требования доступа не выполнены, authorization инициирует forbid; для Bearer API это обычно `403`. Полные модели permissions и resource-based authorization относятся к Модулю III.
+Authorization в ASP.NET Core pipeline проверяет, разрешено ли пользователю выполнить выбранный endpoint. Обычно routing сначала выбирает endpoint, authentication пытается установить `HttpContext.User`, а `UseAuthorization` читает user и endpoint metadata: `[Authorize]`, policies, `AllowAnonymous` или `RequireAuthorization`. Если защищённый endpoint требует аутентифицированного пользователя, а личность пользователя не установлена, authorization инициирует challenge; для Bearer API это обычно `401`. Если личность пользователя есть, но требования доступа не выполнены, authorization инициирует forbid; для Bearer API это обычно `403`. Полные модели permissions и resource-based authorization относятся к Модулю III.
 
 ---
 
@@ -288,8 +288,8 @@ Authorization в ASP.NET Core pipeline проверяет, разрешено л
 - `AllowAnonymous` отключает требования authorization для endpoint.
 - Policy — набор требований.
 - Requirement — условие доступа.
-- `401` — типичный Bearer response на challenge без валидной identity.
-- `403` — типичный Bearer response на forbid при недостатке прав.
+- `401` — типичный Bearer HTTP-ответ на challenge без валидной личности пользователя.
+- `403` — типичный Bearer HTTP-ответ на forbid при недостатке прав.
 - Полная модель доступа будет в Модуле III.
 
 ---
