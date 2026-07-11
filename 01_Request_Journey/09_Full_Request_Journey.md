@@ -6,9 +6,10 @@
 
 **МОДУЛЬ I • Путешествие одного запроса**
 
-**Прогресс:** 100% (9 / 9)
+**Прогресс до главы:** 89% (8 из 9 глав завершены)
 
-✓ URL → ✓ DNS → ✓ IP → ✓ Port → ✓ TCP → ✓ TLS → ✓ HTTP → ✓ HTTPS
+**Маршрут:** URL → DNS → IP → Port → TCP → TLS → HTTP → HTTPS → Full Journey
+**Текущая глава:** Full Journey
 
 **Текущий вопрос:**  
 Как все части складываются в один реальный HTTP-запрос?
@@ -44,18 +45,16 @@
 
 ## Эта глава понадобится позже
 
-```md
-[[Kestrel]]
-[[Nginx]]
-[[Reverse Proxy]]
-[[ASP.NET Core Pipeline]]
-[[Middleware]]
-[[Routing]]
-[[Authentication]]
-[[Authorization]]
-[[Controllers]]
-[[PostgreSQL]]
-```
+- [Kestrel](../02_Entry_Layer/01_Kestrel.md)
+- [Nginx](../02_Entry_Layer/02_Nginx.md)
+- [Reverse Proxy](../02_Entry_Layer/03_Reverse_Proxy.md)
+- [ASP.NET Core Pipeline](../03_ASPNET_Core/01_ASPNET_Core_Pipeline.md)
+- [Middleware](../03_ASPNET_Core/02_Middleware.md)
+- [Routing](../03_ASPNET_Core/03_Routing.md)
+- [Authentication](../03_ASPNET_Core/14_Authentication.md)
+- [Authorization](../03_ASPNET_Core/15_Authorization.md)
+- [Controllers](../03_ASPNET_Core/04_Controllers_vs_Minimal_API.md)
+- [PostgreSQL](../05_Data/02_PostgreSQL.md)
 
 ---
 
@@ -349,7 +348,7 @@ Content-Type: application/json
 | Уровень | Пример проблемы | Что увидим |
 |---|---|---|
 | URL | неверный path | `404` |
-| DNS | домен не резолвится | browser DNS error |
+| DNS | для домена не найден IP-адрес | browser DNS error |
 | IP/Port | никто не слушает порт | connection refused |
 | TCP | сеть недоступна | timeout |
 | TLS | сертификат невалиден | certificate error |
@@ -401,13 +400,13 @@ Content-Type: application/json
 
 Controller — это далеко не первый этап.
 
-До него уже прошли DNS, TCP, TLS, HTTP, proxy, Kestrel, middleware и routing.
+До него уже прошли DNS, TCP, TLS, HTTP, обратный прокси, Kestrel, middleware и routing.
 
 ---
 
 ### Ошибка 2. Не отличать ошибки инфраструктуры от ошибок приложения
 
-`502 Bad Gateway` часто означает проблему между proxy и backend, а не ошибку controller.
+`502 Bad Gateway` часто означает проблему между обратным прокси и backend, а не ошибку controller.
 
 `401` и `403` — разные ошибки auth-уровня.
 
@@ -423,7 +422,7 @@ HTTPS — это не другой формат API.
 
 ---
 
-### Ошибка 4. Игнорировать reverse proxy
+### Ошибка 4. Игнорировать обратный прокси
 
 В production клиент часто не обращается напрямую к Kestrel.
 
@@ -475,7 +474,7 @@ Endpoint
 <details>
 <summary>Ответ</summary>
 
-Потому что до controller есть несколько уровней: DNS, TCP, TLS, proxy, Kestrel, middleware и routing. Например, если Nginx не может подключиться к backend, controller не выполнится вообще, а пользователь может получить `502 Bad Gateway`.
+Потому что до controller есть несколько уровней: DNS, TCP, TLS, обратный прокси, Kestrel, middleware и routing. Например, если Nginx не может подключиться к backend, controller не выполнится вообще, а пользователь может получить `502 Bad Gateway`.
 
 </details>
 
@@ -486,7 +485,7 @@ Endpoint
 <details>
 <summary>Ответ</summary>
 
-Нужно идти по слоям: проверить URL и path, DNS-резолвинг, доступность IP/port, TCP-соединение, TLS certificate, reverse proxy, upstream/backend availability, Kestrel binding, ASP.NET Core logs, routing, authentication/authorization и только потом application/database ошибки. Такой подход помогает не искать баг в коде, если запрос не дошёл до приложения.
+Нужно идти по слоям: проверить URL и path, поиск IP-адреса через DNS, доступность IP/port, TCP-соединение, TLS certificate, обратный прокси, доступность backend-сервиса, адрес и порт, которые слушает Kestrel, ASP.NET Core logs, routing, authentication/authorization и только потом application/database ошибки. Такой подход помогает не искать баг в коде, если запрос не дошёл до приложения.
 
 </details>
 
@@ -517,4 +516,4 @@ Endpoint
 ## Прогресс модуля
 
 **Модуль I:** `Путешествие одного запроса`  
-**Прогресс модуля:** 9 из 9 глав — 100%.
+**Прогресс после главы:** 100% (9 из 9 глав завершены).

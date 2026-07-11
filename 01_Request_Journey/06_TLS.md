@@ -6,9 +6,10 @@
 
 **МОДУЛЬ I • Путешествие одного запроса**
 
-**Прогресс:** 67% (6 / 9)
+**Прогресс до главы:** 56% (5 из 9 глав завершены)
 
-✓ Port → ✓ TCP → ◐ TLS → □ HTTP → □ HTTPS
+**Маршрут:** URL → DNS → IP → Port → TCP → TLS → HTTP → HTTPS → Full Journey
+**Текущая глава:** TLS
 
 **Текущий вопрос:**  
 Как защитить соединение от чтения и подмены данных?
@@ -77,17 +78,15 @@ TLS важен для backend-разработчика не только как 
 
 ## Эта глава понадобится позже
 
-```md
-[[HTTPS]]
-[[Nginx]]
-[[Kestrel]]
-[[Authentication]]
-[[Authorization]]
-[[JWT]]
-[[Cookies]]
-[[OAuth 2.0]]
-[[OpenID Connect]]
-```
+- [HTTPS](./08_HTTPS.md)
+- [Nginx](../02_Entry_Layer/02_Nginx.md)
+- [Kestrel](../02_Entry_Layer/01_Kestrel.md)
+- [Authentication](../03_ASPNET_Core/14_Authentication.md)
+- [Authorization](../03_ASPNET_Core/15_Authorization.md)
+- [JWT](../03_ASPNET_Core/16_Claims_Permissions_Policies.md)
+- [Cookies](../03_ASPNET_Core/14_Authentication.md)
+- [OAuth 2.0](../03_ASPNET_Core/14_Authentication.md)
+- [OpenID Connect](../03_ASPNET_Core/14_Authentication.md)
 
 ---
 
@@ -182,7 +181,7 @@ TLS также не защищает данные после того, как о
 
 Чтобы клиент доверял серверу, сервер предъявляет certificate.
 
-**Certificate (сертификат)** — это цифровой документ, который подтверждает, что сервер действительно владеет доменным именем.
+**Certificate (сертификат — цифровой документ, который подтверждает владение доменным именем)** помогает клиенту доверять серверу.
 
 Например:
 
@@ -363,21 +362,6 @@ TLS защищает канал.
 
 ---
 
-## Когда не нужно уходить глубже
-
-Для Middle+ .NET backend-разработчика обычно достаточно понимать:
-
-- зачем нужен TLS;
-- что HTTPS = HTTP поверх TLS;
-- что такое certificate на практическом уровне;
-- что такое TLS termination;
-- как TLS связан с Nginx, Kestrel, cookies, JWT, OAuth/OIDC;
-- почему forwarded headers важны за reverse proxy.
-
-Глубокая криптография, алгоритмы шифрования и детали certificate chain полезны, но не должны занимать основную часть подготовки к backend-собеседованию.
-
----
-
 ## Что происходит дальше
 
 Защищённый канал установлен.
@@ -471,4 +455,4 @@ TLS — это протокол защиты транспортного соед
 ## Прогресс модуля
 
 **Модуль I:** `Путешествие одного запроса`  
-**Прогресс модуля:** 6 из 9 глав — 67%.
+**Прогресс после главы:** 67% (6 из 9 глав завершены).
