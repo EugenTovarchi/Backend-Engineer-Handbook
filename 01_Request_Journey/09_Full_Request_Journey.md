@@ -45,15 +45,15 @@
 
 ## Эта глава понадобится позже
 
-- [Kestrel](../02_Entry_Layer/01_Kestrel.md)
-- [Nginx](../02_Entry_Layer/02_Nginx.md)
-- [Reverse Proxy](../02_Entry_Layer/03_Reverse_Proxy.md)
-- [ASP.NET Core Pipeline](../03_ASPNET_Core/01_ASPNET_Core_Pipeline.md)
-- [Middleware](../03_ASPNET_Core/02_Middleware.md)
-- [Routing](../03_ASPNET_Core/03_Routing.md)
-- [Authentication](../03_ASPNET_Core/14_Authentication.md)
-- [Authorization](../03_ASPNET_Core/15_Authorization.md)
-- [Controllers](../03_ASPNET_Core/04_Controllers_vs_Minimal_API.md)
+- [Граница Kestrel и ASP.NET Core](../02_ASPNET_Core_Request_Pipeline/01_Kestrel_ASPNET_Core_Boundary.md)
+- [Middleware Pipeline](../02_ASPNET_Core_Request_Pipeline/03_Middleware_Pipeline.md)
+- [Routing и выбор Endpoint](../02_ASPNET_Core_Request_Pipeline/04_Routing_Endpoint_Selection.md)
+- [Authentication внутри Pipeline](../02_ASPNET_Core_Request_Pipeline/05_Authentication_In_Pipeline.md)
+- [Authorization внутри Pipeline](../02_ASPNET_Core_Request_Pipeline/06_Authorization_In_Pipeline.md)
+- [Выполнение Endpoint](../02_ASPNET_Core_Request_Pipeline/07_Endpoint_Execution.md)
+- [Полный ASP.NET Core Request Pipeline](../02_ASPNET_Core_Request_Pipeline/08_Full_ASPNET_Core_Request_Pipeline.md)
+- [Nginx](../04_Production_Entry_Layer/02_Nginx.md)
+- [Reverse Proxy](../04_Production_Entry_Layer/03_Reverse_Proxy.md)
 - [PostgreSQL](../05_Data/02_PostgreSQL.md)
 
 ---
@@ -249,7 +249,7 @@ HttpContext
 Middleware pipeline
 ```
 
-Подробно это будет в следующем модуле.
+Подробно это будет в Модуле II про ASP.NET Core Request Pipeline.
 
 ---
 
@@ -434,7 +434,7 @@ HTTPS — это не другой формат API.
 
 Мы прошли путь запроса до входа в ASP.NET Core.
 
-Следующий крупный модуль должен разобрать, что происходит внутри .NET приложения:
+Следующий модуль разбирает, что происходит внутри .NET приложения:
 
 ```text
 Kestrel
@@ -452,7 +452,7 @@ Authorization
 Endpoint
 ```
 
-То есть следующий модуль логично посвятить ASP.NET Core request pipeline.
+То есть следующий утверждённый модуль посвящён ASP.NET Core Request Pipeline.
 
 ---
 

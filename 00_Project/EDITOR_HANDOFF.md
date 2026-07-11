@@ -82,20 +82,54 @@ Commit первого редакторского прохода:
 - Финальное утверждение Модуля I пользователем.
 - Переход к следующему модулю после финального review Модуля I.
 
-## Следующий предполагаемый модуль
+## Текущий модуль
 
-Следующим предполагаемым направлением является входной слой приложения:
+Текущий модуль:
 
-- Kestrel;
-- Nginx;
-- Reverse Proxy;
-- Load Balancer;
-- API Gateway;
-- Docker Networking;
-- WebSocket / Polling / Long Polling;
-- gRPC.
+```text
+Модуль II. ASP.NET Core Request Pipeline: от Kestrel до Endpoint
+```
 
-Это направление следует считать предполагаемым, а не окончательно утверждённым, пока пользователь не подтвердит старт Модуля II.
+Цель модуля — объяснить, что происходит после того, как HTTP-запрос достиг .NET-приложения:
+
+- как Kestrel передаёт запрос в ASP.NET Core;
+- зачем нужен `HttpContext`;
+- как middleware образуют pipeline;
+- как routing выбирает endpoint;
+- как authentication устанавливает пользователя;
+- как authorization проверяет доступ;
+- когда выполняется controller action или Minimal API handler;
+- как response возвращается через pipeline.
+
+Маршрут Модуля II:
+
+```text
+Kestrel → HttpContext → Middleware → Routing → Authentication → Authorization → Endpoint → Full Pipeline
+```
+
+Главы Модуля II:
+
+1. Граница Kestrel и ASP.NET Core
+2. HttpContext
+3. Middleware Pipeline
+4. Routing и выбор Endpoint
+5. Authentication внутри Pipeline
+6. Authorization внутри Pipeline
+7. Выполнение Endpoint
+8. Полный ASP.NET Core Request Pipeline
+
+Границы scope:
+
+- Authentication и Authorization в Модуле II рассматриваются только как этапы request pipeline.
+- Полная authentication-система не удалена из книги и будет разобрана в Модуле III.
+- JWT, access token, refresh token, OAuth 2.0, OpenID Connect, ASP.NET Core Identity, хранение пользователей и AuthService относятся к Модулю III.
+- Nginx, Reverse Proxy, Load Balancer, API Gateway, YARP, Forwarded Headers, TLS termination и Docker Networking относятся к Модулю IV.
+
+Последовательность ближайших модулей:
+
+1. Модуль II — ASP.NET Core Request Pipeline.
+2. Модуль III — Аутентификация и авторизация.
+3. Модуль IV — Production Entry Layer.
 
 ## Как продолжать работу
 

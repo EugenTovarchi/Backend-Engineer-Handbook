@@ -34,7 +34,7 @@ ASP.NET Core
 
 ---
 
-## Часть I. Путешествие одного запроса
+## Модуль I. Путешествие одного запроса
 
 Цель — не изучать сети как Network Engineer, а понять минимальный фундамент, который нужен .NET Backend-разработчику.
 
@@ -48,51 +48,65 @@ ASP.NET Core
 8. HTTPS
 9. Полное путешествие запроса
 
-Статус: черновик модуля написан полностью.
+Статус: написан полностью, первый редакторский проход завершён, ожидает финального review пользователем.
 
 ---
 
-## Часть II. Входной слой приложения
+## Модуль II. ASP.NET Core Request Pipeline
 
-1. Kestrel
+Цель — понять, что происходит после того, как HTTP-запрос достиг .NET-приложения: от границы Kestrel до выполнения endpoint.
+
+1. Граница Kestrel и ASP.NET Core
+2. HttpContext
+3. Middleware Pipeline
+4. Routing и выбор Endpoint
+5. Authentication внутри Pipeline
+6. Authorization внутри Pipeline
+7. Выполнение Endpoint
+8. Полный ASP.NET Core Request Pipeline
+
+Комментарий: Authentication и Authorization в Модуле II рассматриваются как этапы ASP.NET Core Request Pipeline. Полное устройство authentication-системы, JWT, refresh token, OAuth 2.0, OpenID Connect, ASP.NET Core Identity, хранение пользователей и AuthService рассматриваются в отдельном Модуле III.
+
+---
+
+## Модуль III. Аутентификация и авторизация
+
+Предварительный маршрут:
+
+1. Identity, Authentication и Authorization
+2. Credentials и хранение пользователей
+3. Authentication в ASP.NET Core
+4. JWT
+5. Access Token
+6. Refresh Token
+7. Claims, Roles, Permissions и Policies
+8. OAuth 2.0
+9. OpenID Connect
+10. ASP.NET Core Identity
+11. Архитектура AuthService
+12. Полный путь аутентификации
+
+---
+
+## Модуль IV. Production Entry Layer
+
+Цель — разобрать production-вход перед ASP.NET Core приложением в контексте входящего запроса.
+
+1. Kestrel как production web server
 2. Nginx
 3. Reverse Proxy
 4. Load Balancer
 5. API Gateway
-6. YARP / альтернативы Nginx в .NET-экосистеме
-7. Docker Networking для backend-разработчика
-8. WebSocket / Polling / Long Polling
-9. gRPC
+6. YARP
+7. Forwarded Headers
+8. TLS termination на proxy
+9. Docker Networking в пути от proxy до приложения
 
-Комментарий: `gRPC` лучше рассматривать после HTTP/Kestrel/Nginx, когда уже понятно, как сервисы принимают запросы и почему REST не всегда удобен для service-to-service communication.
-
----
-
-## Часть III. ASP.NET Core
-
-1. ASP.NET Core Pipeline
-2. Middleware
-3. Routing
-4. Controllers vs Minimal API
-5. Filters
-6. Model Binding
-7. Validation
-8. ProblemDetails
-9. Dependency Injection
-10. Configuration / Options Pattern
-11. Logging
-12. Hosted Services / BackgroundService
-13. Health Checks
-14. Authentication
-15. Authorization
-16. Claims / Permissions / Policies
-17. API Versioning
-18. Swagger / OpenAPI
-19. Rate Limiting
+Комментарий: WebSocket, Polling, Long Polling и gRPC не входят в обязательную цепочку Production Entry Layer. Они относятся к способам взаимодействия и интеграциям и рассматриваются в будущих разделах отдельно.
 
 ---
 
-## Часть IV. C# и CLR
+## Часть V. C# и CLR
 
 1. CLR / JIT / AOT
 2. Value Types vs Reference Types
@@ -121,7 +135,7 @@ ASP.NET Core
 
 ---
 
-## Часть V. Данные и базы данных
+## Часть VI. Данные и базы данных
 
 1. SQL база для backend-разработчика
 2. PostgreSQL
@@ -151,7 +165,7 @@ ASP.NET Core
 
 ---
 
-## Часть VI. Архитектура
+## Часть VII. Архитектура
 
 1. Monolith
 2. Modular Monolith
@@ -175,7 +189,7 @@ ASP.NET Core
 
 ---
 
-## Часть VII. Интеграции и distributed systems
+## Часть VIII. Интеграции и distributed systems
 
 1. REST как базовый способ общения сервисов
 2. gRPC
@@ -198,7 +212,7 @@ ASP.NET Core
 
 ---
 
-## Часть VIII. Observability
+## Часть IX. Observability
 
 1. Что такое Observability
 2. Logs / Metrics / Traces
@@ -219,7 +233,7 @@ ASP.NET Core
 
 ---
 
-## Часть IX. Storage и файлы
+## Часть X. Storage и файлы
 
 1. S3 / MinIO
 2. Pre-signed URLs
@@ -229,7 +243,7 @@ ASP.NET Core
 
 ---
 
-## Часть X. Docker и окружение
+## Часть XI. Docker и окружение
 
 1. Docker basics для backend-разработчика
 2. Dockerfile
@@ -242,7 +256,7 @@ ASP.NET Core
 
 ---
 
-## Часть XI. CI/CD и доставка
+## Часть XII. CI/CD и доставка
 
 1. Что такое CI
 2. Что такое CD
@@ -261,7 +275,7 @@ ASP.NET Core
 
 ---
 
-## Часть XII. Kubernetes для backend-разработчика
+## Часть XIII. Kubernetes для backend-разработчика
 
 Без DevOps-глубины. Цель — понимать, что происходит с backend-приложением в Kubernetes.
 
@@ -277,7 +291,7 @@ ASP.NET Core
 
 ---
 
-## Часть XIII. Практика проектов
+## Часть XIV. Практика проектов
 
 1. DirectoryService
 2. FileService
@@ -298,17 +312,15 @@ ASP.NET Core
 ## Приоритет ближайших модулей
 
 1. Завершить review Модуля I: `Путешествие одного запроса`
-2. ASP.NET Core Request Pipeline
-3. Kestrel
-4. Nginx / Reverse Proxy
-5. Docker Networking
-6. Auth / JWT / Claims / Policy
-7. async/await + ThreadPool
-8. SemaphoreSlim + Task.WhenAll
-9. PostgreSQL Locks / FOR UPDATE
-10. RabbitMQ / Outbox
-11. gRPC
-12. Kafka vs RabbitMQ
-13. Observability stack
-14. CI/CD
-15. PostgreSQL vs MS SQL
+2. Модуль II — ASP.NET Core Request Pipeline
+3. Модуль III — Аутентификация и авторизация
+4. Модуль IV — Production Entry Layer
+5. async/await + ThreadPool
+6. SemaphoreSlim + Task.WhenAll
+7. PostgreSQL Locks / FOR UPDATE
+8. RabbitMQ / Outbox
+9. gRPC
+10. Kafka vs RabbitMQ
+11. Observability stack
+12. CI/CD
+13. PostgreSQL vs MS SQL
