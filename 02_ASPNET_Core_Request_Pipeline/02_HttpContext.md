@@ -9,6 +9,7 @@
 **Прогресс до главы:** 13% (1 из 8 глав завершена)
 
 **Маршрут:** Kestrel → HttpContext → Middleware → Routing → Authentication → Authorization → Endpoint → Full Pipeline
+
 **Текущая глава:** HttpContext
 
 **Текущий вопрос:**  
@@ -37,7 +38,7 @@
 - request;
 - response;
 - текущий пользователь;
-- route values;
+- значения маршрута;
 - dependency injection scope;
 - cancellation token;
 - connection info;
@@ -54,7 +55,7 @@
 - [Routing и выбор Endpoint](./04_Routing_Endpoint_Selection.md)
 - [Authentication внутри Pipeline](./05_Authentication_In_Pipeline.md)
 - [Authorization внутри Pipeline](./06_Authorization_In_Pipeline.md)
-- [Выполнение Endpoint](./07_Endpoint_Execution.md)
+- [Выполнение выбранного Endpoint](./07_Endpoint_Execution.md)
 
 ---
 
@@ -62,7 +63,7 @@
 
 **HttpContext (контекст HTTP-запроса — объект, который хранит данные текущего запроса и ответа)** передаётся через ASP.NET Core pipeline.
 
-Через него middleware и endpoint получают доступ к `Request`, `Response`, `User`, services, route values и другим данным текущего запроса.
+Через него middleware и endpoint получают доступ к `Request`, `Response`, `User`, services, значениям маршрута и другим данным текущего запроса.
 
 `HttpContext` живёт в рамках одного запроса.
 
@@ -80,7 +81,7 @@
 - какой ответ нужно вернуть;
 - какие заметки появились по пути.
 
-После завершения запроса эта папка больше не должна использоваться как глобальное состояние. `HttpContext` не является thread-safe (потокобезопасным — пригодным для параллельного доступа из нескольких потоков без дополнительного контроля).
+После завершения запроса эта папка больше не должна использоваться как глобальное состояние. `HttpContext` не является потокобезопасным (thread-safe — пригодным для параллельного доступа из нескольких потоков без дополнительного контроля).
 
 ---
 
@@ -98,7 +99,7 @@
 | `TraceIdentifier` | идентификатор запроса для логов |
 | `RequestAborted` | cancellation token запроса |
 | `Connection` | информация о соединении |
-| route values | значения, найденные routing-ом |
+| значения маршрута (route values) | параметры, извлечённые из шаблона маршрута |
 | endpoint | выбранный endpoint после routing |
 
 Пример доступа:
@@ -175,9 +176,9 @@ static HttpContext? LastContext;
 - другой запрос получит другой context;
 - объект не предназначен для работы после завершения request;
 - данные запроса могут стать недоступны после завершения обработки;
-- появляется риск гонок и утечек request-specific state между пользователями.
+- появляется риск гонок и утечек данных конкретного запроса между пользователями.
 
-Если нужно запустить background work, скопируй необходимые значения в отдельный объект:
+Если нужно запустить фоновую задачу, скопируй необходимые значения в отдельный объект:
 
 ```csharp
 var work = new FileAuditWork(
@@ -186,7 +187,7 @@ var work = new FileAuditWork(
     FileId: fileId);
 ```
 
-В background task должен уходить такой snapshot, а не сам `HttpContext`.
+В фоновую задачу должна уходить такая копия необходимых данных, а не сам `HttpContext`.
 
 `IHttpContextAccessor` полезен в ограниченных случаях, но его не стоит превращать в универсальный способ доступа к request state из любого места приложения.
 
@@ -232,7 +233,7 @@ GET /api/files/123
 Pipeline может использовать `HttpContext` так:
 
 - logging middleware читает `TraceIdentifier`;
-- routing записывает route values;
+- routing записывает значения маршрута;
 - authentication записывает `User`;
 - authorization читает `User` и endpoint metadata;
 - endpoint формирует `Response`.
@@ -273,7 +274,7 @@ Pipeline может использовать `HttpContext` так:
 <details>
 <summary>Ответ</summary>
 
-Потому что `HttpContext` относится к конкретному запросу, не является thread-safe и не должен использоваться после завершения request. Глобальное хранение может привести к ошибкам, гонкам и утечкам request-specific state между пользователями. Для background work нужно копировать нужные значения в отдельный объект.
+Потому что `HttpContext` относится к конкретному запросу, не является потокобезопасным и не должен использоваться после завершения request. Глобальное хранение может привести к ошибкам, гонкам и утечкам данных конкретного запроса между пользователями. Для фоновой задачи нужно копировать нужные значения в отдельный объект.
 
 </details>
 
@@ -292,7 +293,7 @@ Pipeline может использовать `HttpContext` так:
 
 ## Ответ для собеседования
 
-`HttpContext` — это центральный объект текущего HTTP-запроса в ASP.NET Core. Он содержит `Request`, `Response`, `User`, scoped services, route values, connection info, trace id и cancellation token. Middleware и endpoint работают с одним context по мере движения запроса через pipeline. Важно помнить, что `HttpContext` живёт только в рамках запроса, не является thread-safe и не должен использоваться после завершения обработки. Для background work нужно копировать нужные значения в отдельный объект.
+`HttpContext` — это центральный объект текущего HTTP-запроса в ASP.NET Core. Он содержит `Request`, `Response`, `User`, scoped services, значения маршрута, connection info, trace id и cancellation token. Middleware и endpoint работают с одним context по мере движения запроса через pipeline. Важно помнить, что `HttpContext` живёт только в рамках запроса, не является потокобезопасным и не должен использоваться после завершения обработки. Для фоновой задачи нужно копировать нужные значения в отдельный объект.
 
 ---
 
@@ -307,8 +308,8 @@ Pipeline может использовать `HttpContext` так:
 - `TraceIdentifier` полезен для логов.
 - `RequestAborted` передаёт сигнал отмены, но не останавливает код магически.
 - `HttpContext` нельзя хранить глобально.
-- `HttpContext` не является thread-safe.
-- Для background work копируют значения, а не сам context.
+- `HttpContext` не является потокобезопасным.
+- Для фоновой задачи копируют значения, а не сам context.
 
 ---
 

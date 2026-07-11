@@ -9,6 +9,7 @@
 **Прогресс до главы:** 0% (0 из 8 глав завершены)
 
 **Маршрут:** Kestrel → HttpContext → Middleware → Routing → Authentication → Authorization → Endpoint → Full Pipeline
+
 **Текущая глава:** Kestrel
 
 **Текущий вопрос:**  
@@ -67,27 +68,25 @@ ASP.NET Core application pipeline
 - [Middleware Pipeline](./03_Middleware_Pipeline.md)
 - [Routing и выбор Endpoint](./04_Routing_Endpoint_Selection.md)
 - [Полный ASP.NET Core Request Pipeline](./08_Full_ASPNET_Core_Request_Pipeline.md)
-- Production Entry Layer в будущем Модуле IV
+- входной слой приложения в production (Production Entry Layer) в будущем Модуле IV
 
 ---
 
 ## Короткое определение
 
-**Kestrel (стандартный cross-platform web server ASP.NET Core — компонент, который принимает HTTP-запросы и передаёт их в ASP.NET Core pipeline)** находится на границе между сетью и приложением.
+**Kestrel (стандартный кроссплатформенный веб-сервер ASP.NET Core — работает на разных операционных системах, принимает HTTP-запросы и передаёт их в ASP.NET Core pipeline)** находится на границе между сетью и приложением.
 
 Он принимает соединение, разбирает HTTP на уровне web server и передаёт запрос дальше в приложение.
 
 Kestrel не выбирает controller и не выполняет бизнес-логику.
 
-В большинстве современных ASP.NET Core templates используется именно Kestrel. Это типичный server implementation, но не единственная возможная модель hosting: в некоторых сценариях граница между приложением и server implementation может выглядеть иначе.
+В большинстве современных шаблонов ASP.NET Core используется именно Kestrel. Это типичная реализация веб-сервера для ASP.NET Core, но не единственная возможная модель размещения и запуска приложения. В некоторых сценариях граница между приложением и веб-сервером устроена иначе.
 
 ---
 
 ## Простая аналогия
 
-Kestrel похож на входную дверь офиса.
-
-Он принимает посетителя и передаёт его внутрь здания.
+Kestrel похож на администратора у входа или сотрудника ресепшена: он встречает посетителя и направляет его дальше внутрь системы.
 
 Но Kestrel не решает, в какой отдел пойдёт посетитель, не проверяет его права и не выполняет работу отдела.
 
@@ -108,14 +107,14 @@ app.MapGet("/ping", () => "pong");
 app.Run();
 ```
 
-`WebApplication.Run` запускает host, начинает обработку запросов и в синхронной модели вызова блокирует текущий поток выполнения до остановки приложения.
+`WebApplication.Run` запускает веб-приложение, начинает обработку запросов и ожидает остановки приложения.
 
 Упрощённо:
 
 ```text
 app.Run()
   ↓
-Kestrel начинает слушать server address, port и protocol
+Kestrel начинает слушать адрес сервера, порт и протокол
   ↓
 приходит HTTP request
   ↓
@@ -126,8 +125,8 @@ Kestrel начинает слушать server address, port и protocol
 
 Здесь есть два разных термина, которые нельзя смешивать:
 
-- **Kestrel listening endpoint (endpoint прослушивания Kestrel — server address, port, protocol и настройки прослушивания)** описывает, где web server принимает подключения, например `http://0.0.0.0:8080`.
-- **ASP.NET Core Endpoint (endpoint маршрутизации ASP.NET Core — `RequestDelegate` вместе с metadata и routing information)** описывает обработчик, который может быть выбран routing внутри приложения.
+- **Kestrel listening endpoint (endpoint прослушивания Kestrel — адрес сервера, порт, протокол и настройки прослушивания)** описывает, где web server принимает подключения, например `http://0.0.0.0:8080`.
+- **ASP.NET Core Endpoint (endpoint маршрутизации ASP.NET Core — `RequestDelegate` вместе с metadata и сведениями о маршруте)** описывает обработчик, который может быть выбран routing внутри приложения.
 
 Подробно выбор ASP.NET Core Endpoint разбирается в главе [Routing и выбор Endpoint](./04_Routing_Endpoint_Selection.md).
 
@@ -178,7 +177,7 @@ sequenceDiagram
 
 ## Практический пример
 
-Нейтральный учебный запрос:
+Например:
 
 ```text
 GET /api/files/123
@@ -212,7 +211,7 @@ app.MapGet("/api/files/{id}", (string id) =>
 app.Run();
 ```
 
-`app.Run()` запускает host и начинает обработку запросов. Kestrel принимает запрос, а ASP.NET Core pipeline уже решает, какой ASP.NET Core Endpoint должен его обработать.
+`app.Run()` запускает веб-приложение и начинает обработку запросов. Kestrel принимает запрос, а ASP.NET Core pipeline уже решает, какой ASP.NET Core Endpoint должен его обработать.
 
 ---
 
@@ -269,21 +268,21 @@ Middleware выполняется внутри ASP.NET Core pipeline. Kestrel н
 
 ## Ответ для собеседования
 
-Kestrel — это стандартный cross-platform web server, который обычно используется в ASP.NET Core-приложениях. Он находится на границе между сетевым уровнем и приложением: принимает HTTP-запрос, разбирает его как web server и передаёт данные запроса hosting infrastructure ASP.NET Core. На этой границе создаётся `HttpContext`, с которым дальше работает application pipeline. Kestrel не является middleware и не выбирает controller. После передачи запроса приложение работает через middleware, routing, authentication, authorization и ASP.NET Core Endpoint. Поэтому controller — не начало обработки, а один из возможных поздних этапов.
+Kestrel — это стандартный кроссплатформенный веб-сервер, который обычно используется в ASP.NET Core-приложениях. Он находится на границе между сетевым уровнем и приложением: принимает HTTP-запрос, разбирает его как web server и передаёт данные запроса инфраструктуре размещения и запуска ASP.NET Core. На этой границе создаётся `HttpContext`, с которым дальше работает application pipeline. Kestrel не является middleware и не выбирает controller. После передачи запроса приложение работает через middleware, routing, authentication, authorization и ASP.NET Core Endpoint. Поэтому controller — не начало обработки, а один из возможных поздних этапов.
 
 ---
 
 ## Шпаргалка
 
-- Kestrel — стандартный cross-platform web server ASP.NET Core.
+- Kestrel — стандартный кроссплатформенный веб-сервер ASP.NET Core.
 - Kestrel находится до middleware pipeline.
-- `app.Run()` запускает host и начинает обработку запросов.
+- `app.Run()` запускает веб-приложение и начинает обработку запросов.
 - Приложение должно слушать нужный address/port.
 - Kestrel не выбирает controller.
 - Kestrel не является middleware.
-- На границе ASP.NET Core hosting появляется `HttpContext`.
+- На границе инфраструктуры размещения и запуска ASP.NET Core появляется `HttpContext`.
 - Kestrel listening endpoint не равен ASP.NET Core routing Endpoint.
-- Production-вход перед Kestrel разбирается в Модуле IV.
+- Входной слой приложения в production перед Kestrel разбирается в Модуле IV.
 
 ---
 

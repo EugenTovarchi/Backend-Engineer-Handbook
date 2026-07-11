@@ -100,6 +100,7 @@ Commit первого редакторского прохода:
 Первичный черновик Модуля II создан.
 Корректирующий технический проход после review выполнен.
 Модуль II ожидает пользовательского review и финального редакторского прохода.
+Пользовательский редакционный проход по русской терминологии выполнен; техническая модель pipeline не изменялась.
 ```
 
 Цель модуля — объяснить, что происходит после того, как HTTP-запрос достиг .NET-приложения:
@@ -127,7 +128,7 @@ Kestrel → HttpContext → Middleware → Routing → Authentication → Author
 4. Routing и выбор Endpoint
 5. Authentication внутри Pipeline
 6. Authorization внутри Pipeline
-7. Выполнение Endpoint
+7. Выполнение выбранного Endpoint
 8. Полный ASP.NET Core Request Pipeline
 
 Границы scope:

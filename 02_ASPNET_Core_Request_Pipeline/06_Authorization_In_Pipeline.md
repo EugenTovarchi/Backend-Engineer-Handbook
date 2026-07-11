@@ -9,6 +9,7 @@
 **Прогресс до главы:** 63% (5 из 8 глав завершены)
 
 **Маршрут:** Kestrel → HttpContext → Middleware → Routing → Authentication → Authorization → Endpoint → Full Pipeline
+
 **Текущая глава:** Authorization
 
 **Текущий вопрос:**  
@@ -36,7 +37,7 @@
 
 Authorization объясняет:
 
-- почему authenticated user может получить `403`;
+- почему аутентифицированный пользователь может получить `403`;
 - зачем нужен `UseAuthorization`;
 - как endpoint metadata влияет на доступ;
 - почему routing важен до authorization;
@@ -46,7 +47,7 @@ Authorization объясняет:
 
 ## Эта глава понадобится позже
 
-- [Выполнение Endpoint](./07_Endpoint_Execution.md)
+- [Выполнение выбранного Endpoint](./07_Endpoint_Execution.md)
 - [Полный ASP.NET Core Request Pipeline](./08_Full_ASPNET_Core_Request_Pipeline.md)
 - Аутентификация и авторизация в будущем Модуле III
 
@@ -62,7 +63,7 @@ Authorization объясняет:
 Что этому пользователю разрешено?
 ```
 
-Если пользователь не установлен, результатом может быть challenge. Для Bearer API это обычно `401`. Если пользователь установлен, но прав недостаточно, результатом может быть forbid. Для Bearer API это обычно `403`.
+Если пользователь не установлен, результатом может быть challenge (запрос аутентификации). Для Bearer API это обычно `401`. Если пользователь установлен, но прав недостаточно, результатом может быть forbid (отказ в доступе). Для Bearer API это обычно `403`.
 
 ---
 
@@ -94,7 +95,7 @@ app.MapGet("/api/files/{id}", (string id) => Results.Ok())
 - `HttpContext.User`;
 - endpoint metadata;
 - policies;
-- roles, claims или другие требования.
+- roles (роли), claims (утверждения о пользователе) или другие требования.
 
 Важно: routing должен выбрать endpoint до endpoint-aware authorization, иначе middleware не узнает, какие требования применяются к конкретному endpoint.
 
@@ -127,7 +128,7 @@ app.MapGet("/public", () => Results.Ok())
     .AllowAnonymous();
 ```
 
-`AllowAnonymous` показывает, что endpoint может быть выполнен без authenticated user. Это отключает требования authorization для endpoint, но не обязательно означает, что Authentication Middleware вообще не запускалась: authentication и authorization остаются независимыми этапами.
+`AllowAnonymous` показывает, что endpoint может быть выполнен без аутентифицированного пользователя. Это отключает требования authorization для endpoint, но не обязательно означает, что Authentication Middleware вообще не запускалась: authentication и authorization остаются независимыми этапами.
 
 ---
 
@@ -135,7 +136,7 @@ app.MapGet("/public", () => Results.Ok())
 
 **Policy (политика доступа — именованный набор требований authorization)** описывает правило доступа.
 
-**Requirement (требование — отдельное условие внутри policy)** описывает, что нужно проверить.
+**Requirement (требование политики — отдельное условие внутри policy)** описывает, что нужно проверить.
 
 **Authorization handler (обработчик авторизации — компонент, который проверяет requirement)** принимает решение на основе user, resource или других данных.
 
@@ -164,9 +165,9 @@ app.MapGet("/api/files/{id}", (string id) => Results.Ok())
 
 | Способ | Пример | Смысл |
 |---|---|---|
-| Role | `Admin` | крупная роль пользователя |
-| Claim | `department:42` | утверждение о пользователе |
-| Permission | `files.read` | конкретное разрешение |
+| Role (роль) | `Admin` | роль пользователя |
+| Claim (утверждение о пользователе) | `department:42` | факт или характеристика пользователя |
+| Permission (конкретное разрешение) | `files.read` | право выполнить конкретное действие |
 
 На уровне этой главы важно понять место этих данных в pipeline: authorization читает их из пользователя и правил endpoint.
 
@@ -174,7 +175,7 @@ app.MapGet("/api/files/{id}", (string id) => Results.Ok())
 
 ## Challenge, forbid, 401 и 403
 
-Challenge:
+Challenge (запрос аутентификации):
 
 ```text
 пользователь не установлен или credentials невалидны
@@ -183,12 +184,12 @@ Challenge:
 обычно:
 
 ```text
-Authorization triggers challenge
+Authorization запускает challenge
   ↓
-Bearer handler usually returns 401 Unauthorized
+обработчик Bearer-схемы обычно формирует 401 Unauthorized
 ```
 
-Forbid:
+Forbid (отказ в доступе):
 
 ```text
 пользователь установлен, но доступ запрещён
@@ -197,9 +198,9 @@ Forbid:
 обычно:
 
 ```text
-Authorization triggers forbid
+Authorization запускает forbid
   ↓
-Bearer handler usually returns 403 Forbidden
+обработчик Bearer-схемы обычно формирует 403 Forbidden
 ```
 
 Конкретная authentication scheme может менять форму challenge/forbid response.
@@ -210,13 +211,13 @@ Bearer handler usually returns 403 Forbidden
 
 ```mermaid
 flowchart TD
-    R[Routing selected endpoint] --> A[Authentication set User]
+    R[Routing выбрал endpoint] --> A[Authentication установила User]
     A --> Z[Authorization]
     Z --> Meta[Read endpoint metadata]
     Meta --> Decision{Allowed?}
     Decision -- Yes --> Next[Endpoint execution]
-    Decision -- No user --> C[401 Challenge]
-    Decision -- No rights --> F[403 Forbid]
+    Decision -- Нет пользователя --> C[401 Challenge]
+    Decision -- Нет прав --> F[403 Forbid]
 ```
 
 ---
@@ -274,7 +275,7 @@ Authentication устанавливает пользователя. Authorizatio
 
 ## Ответ для собеседования
 
-Authorization в ASP.NET Core pipeline проверяет, разрешено ли пользователю выполнить выбранный endpoint. Обычно routing сначала выбирает endpoint, authentication пытается установить `HttpContext.User`, а `UseAuthorization` читает user и endpoint metadata: `[Authorize]`, policies, `AllowAnonymous` или `RequireAuthorization`. Если protected endpoint требует authenticated user, а identity нет, authorization инициирует challenge; для Bearer API это обычно `401`. Если identity есть, но требования доступа не выполнены, authorization инициирует forbid; для Bearer API это обычно `403`. Полные модели permissions и resource-based authorization относятся к Модулю III.
+Authorization в ASP.NET Core pipeline проверяет, разрешено ли пользователю выполнить выбранный endpoint. Обычно routing сначала выбирает endpoint, authentication пытается установить `HttpContext.User`, а `UseAuthorization` читает user и endpoint metadata: `[Authorize]`, policies, `AllowAnonymous` или `RequireAuthorization`. Если защищённый endpoint требует аутентифицированного пользователя, а identity нет, authorization инициирует challenge; для Bearer API это обычно `401`. Если identity есть, но требования доступа не выполнены, authorization инициирует forbid; для Bearer API это обычно `403`. Полные модели permissions и resource-based authorization относятся к Модулю III.
 
 ---
 
