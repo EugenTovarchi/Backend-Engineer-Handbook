@@ -143,7 +143,7 @@ Argon2 можно встретить как современный password hash
 - не требовать периодическую смену пароля без признаков компрометации как универсальное правило;
 - проверять новые passwords по blocklist известных, распространённых или скомпрометированных значений;
 - разрешать password managers, autofill и paste;
-- выполнять Unicode NFC normalization перед hashing, если система принимает Unicode passwords;
+- если система принимает Unicode passwords, NIST рекомендует (SHOULD) применять NFC normalization перед hashing;
 - использовать rate limiting для неуспешных попыток;
 - хранить passwords в форме, устойчивой к offline attacks: salted password hashing scheme с cost factor;
 - хранить scheme, version и параметры, чтобы поддерживать migration;

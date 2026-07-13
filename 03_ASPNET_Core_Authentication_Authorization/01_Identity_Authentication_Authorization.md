@@ -100,9 +100,9 @@
 Subject
     ↓ presents
 Credential
-    ↓ verified by
+    ↓
 Authentication
-    ↓ may load/link
+    ↑ may consult
 Account or external identity record
     ↓ produces
 Principal
@@ -113,6 +113,8 @@ Authorization
 **Account (учётная запись — сохранённая запись системы о субъекте и его способах входа)** обычно живёт в базе данных. Account может принадлежать человеку, сервису или организации.
 
 **Identity Provider (поставщик identity — внешняя сторона, которая аутентифицирует субъекта и возвращает результат по протоколу)** не является credential. Credential или protocol artifact — это проверяемый материал: password, cookie, bearer token, client certificate, authorization code или ID Token в своём назначении. **External login link (локальная связь внешней identity — сопоставление `issuer/provider + subject` с внутренним `UserId`)** тоже не является credential. Подробно внешний provider будет разобран в главе [OpenID Connect и внешние Identity Providers](./13_OpenID_Connect_External_Identity_Providers.md).
+
+Account или external identity record может быть источником данных для authentication, но не является обязательным результатом каждого authentication mechanism. Парольная authentication обычно загружает account и stored verifier до проверки пароля; подробнее это будет разобрано в главе [Парольная аутентификация и безопасное хранение паролей](./03_Password_Authentication_Storage.md). Stateless token validation может проверить credential без загрузки локального account; token-based сценарии будут разобраны в главах про [Access Token и Bearer Authentication](./06_Access_Token_Bearer_Authentication.md) и [JWT](./07_JWT_Token_Validation.md).
 
 **Identity (установленная личность — результат успешной authentication)** не обязана быть ровно одной строкой таблицы users. Это представление того, что система смогла установить о субъекте.
 
@@ -145,8 +147,8 @@ Login и registration — это сценарии приложения. Registra
 flowchart TD
     S[Subject] --> C[Credentials]
     C --> A[Authentication]
-    A --> AR[Account or external identity record]
-    AR --> P[ClaimsPrincipal]
+    AR[Account or external identity record] -. may be consulted by .-> A
+    A --> P[ClaimsPrincipal]
     P --> Z[Authorization]
     Z --> O[Allow / Challenge / Forbid]
 ```
