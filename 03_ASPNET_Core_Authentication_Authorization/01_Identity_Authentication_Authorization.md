@@ -145,10 +145,10 @@ Login и registration — это сценарии приложения. Registra
 flowchart TD
     S[Subject] --> C[Credentials]
     C --> A[Authentication]
-    A --> R[Account or external identity record]
-    R --> P[ClaimsPrincipal]
+    A --> AR[Account or external identity record]
+    AR --> P[ClaimsPrincipal]
     P --> Z[Authorization]
-    Z --> R[Allow / Challenge / Forbid]
+    Z --> O[Allow / Challenge / Forbid]
 ```
 
 ---
