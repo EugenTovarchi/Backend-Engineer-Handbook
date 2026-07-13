@@ -71,22 +71,29 @@ ASP.NET Core
 
 ---
 
-## Модуль III. Аутентификация и авторизация
+## Модуль III. Аутентификация и авторизация в ASP.NET Core: Cookies, JWT, OAuth 2.0 и OpenID Connect
 
-Предварительный маршрут:
+Цель — разобрать authentication и authorization как полноценную инженерную тему ASP.NET Core: от identity, credentials и безопасного хранения паролей до cookies, JWT, refresh token, claims, policies, OAuth 2.0, OpenID Connect, ASP.NET Core Identity, OpenIddict и архитектуры AuthService.
 
-1. Identity, Authentication и Authorization
-2. Credentials и хранение пользователей
-3. Authentication в ASP.NET Core
-4. JWT
-5. Access Token
-6. Refresh Token
-7. Claims, Roles, Permissions и Policies
-8. OAuth 2.0
-9. OpenID Connect
-10. ASP.NET Core Identity
-11. Архитектура AuthService
-12. Полный путь аутентификации
+1. Кто обращается к системе: Identity, Authentication и Authorization
+2. Учётная запись, credentials и хранение пользователей
+3. Парольная аутентификация и безопасное хранение паролей
+4. Модель Authentication в ASP.NET Core
+5. Cookie Authentication и аутентифицированная session
+6. Access Token и Bearer Authentication
+7. JWT и проверка token
+8. Refresh Token и жизненный цикл token
+9. Claims, Roles и Permissions
+10. Policy-based и Resource-based Authorization в ASP.NET Core
+11. OAuth 2.0: делегирование доступа, роли и scopes
+12. Authorization Code Flow и PKCE
+13. OpenID Connect и внешние Identity Providers
+14. ASP.NET Core Identity
+15. OpenIddict
+16. Архитектура AuthService и границы distributed system
+17. Полный путь аутентификации и авторизации
+
+Комментарий: Модуль III не сводит authentication к JWT. Cookie Authentication и token-based authentication рассматриваются как разные модели. OAuth 2.0 и OpenID Connect не смешиваются. ASP.NET Core Identity, OpenIddict и AuthService разделяются по ответственности. Модуль не дублирует Модуль II про request pipeline, Модуль IV про production entry layer и Модуль V про Web API execution и общую инфраструктуру приложения.
 
 ---
 

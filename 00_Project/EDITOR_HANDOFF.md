@@ -136,10 +136,30 @@ Kestrel → HttpContext → Middleware → Routing → Authentication → Author
 Текущая рабочая тема:
 
 ```text
-Архитектурное проектирование Модуля III. Аутентификация и авторизация.
+Модуль III. Аутентификация и авторизация в ASP.NET Core: Cookies, JWT, OAuth 2.0 и OpenID Connect.
 ```
 
-Маршрут Модуля III в `ROADMAP.md` пока предварительный и ещё не зафиксирован как окончательный. Главы Модуля III пока создавать нельзя.
+Архитектура и маршрут Модуля III утверждены пользователем. Главы Модуля III пока создавать нельзя: следующий этап — отдельное CLI-задание на создание структуры и первичных черновиков.
+
+Маршрут Модуля III:
+
+1. Кто обращается к системе: Identity, Authentication и Authorization
+2. Учётная запись, credentials и хранение пользователей
+3. Парольная аутентификация и безопасное хранение паролей
+4. Модель Authentication в ASP.NET Core
+5. Cookie Authentication и аутентифицированная session
+6. Access Token и Bearer Authentication
+7. JWT и проверка token
+8. Refresh Token и жизненный цикл token
+9. Claims, Roles и Permissions
+10. Policy-based и Resource-based Authorization в ASP.NET Core
+11. OAuth 2.0: делегирование доступа, роли и scopes
+12. Authorization Code Flow и PKCE
+13. OpenID Connect и внешние Identity Providers
+14. ASP.NET Core Identity
+15. OpenIddict
+16. Архитектура AuthService и границы distributed system
+17. Полный путь аутентификации и авторизации
 
 Границы scope:
 
@@ -149,9 +169,22 @@ Kestrel → HttpContext → Middleware → Routing → Authentication → Author
 - Nginx, Reverse Proxy, Load Balancer, API Gateway, YARP, Forwarded Headers, TLS termination и Docker Networking относятся к Модулю IV.
 - Controllers, Minimal APIs, Filters, Model Binding, Validation, ProblemDetails, Dependency Injection, Configuration, Hosted Services, Health Checks, API Versioning, OpenAPI и Rate Limiting восстановлены как scope будущего Модуля V.
 
+Границы scope Модуля III:
+
+- Authentication не сводится к JWT.
+- Cookie Authentication и token-based authentication рассматриваются как разные модели.
+- Password Hashing, Cookie Authentication, Access Token, JWT validation и Refresh Token lifecycle разделены.
+- Claims, Roles и Permissions отделены от Policy-based и Resource-based Authorization.
+- OAuth 2.0 и OpenID Connect не смешиваются.
+- ASP.NET Core Identity, OpenIddict и AuthService разделяются по ответственности.
+- Отдельный AuthService не считается обязательным для каждого проекта.
+- Security threats и типичные ошибки раскрываются рядом с механизмами и сводятся в итоговой главе, без отдельной изолированной главы.
+- CORS не переносится в Модуль III автоматически.
+- CSRF раскрывается в темах Cookie Authentication и redirect-based flows.
+
 Последовательность ближайших модулей:
 
-1. Модуль III — Аутентификация и авторизация.
+1. Модуль III — Аутентификация и авторизация в ASP.NET Core: Cookies, JWT, OAuth 2.0 и OpenID Connect.
 2. Модуль IV — Production Entry Layer.
 3. Модуль V — ASP.NET Core Web API и инфраструктура приложения.
 
@@ -169,7 +202,7 @@ Kestrel → HttpContext → Middleware → Routing → Authentication → Author
 5. Термины объяснять при первом появлении в главе.
 6. Не повторять полностью термины, уже разобранные раньше; использовать короткое напоминание и ссылку.
 7. После завершения модуля обновить `PROJECT_STATUS.md` и `CHANGELOG.md`.
-8. Перед созданием глав Модуля III сначала утвердить его окончательную архитектуру и маршрут.
+8. Главы Модуля III создавать только после отдельного CLI-задания на структуру и первичные черновики.
 
 ## Что запрещено менять
 

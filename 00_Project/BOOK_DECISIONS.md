@@ -474,3 +474,73 @@ Request Pipeline объясняет движение `HttpContext` до endpoint
 Последствия
 
 Модуль II остаётся сфокусированным на pipeline от Kestrel до endpoint. Web API execution и инфраструктурные возможности ASP.NET Core будут разобраны позже отдельным модулем, без потери этих тем из roadmap.
+
+---
+
+# Decision 018
+
+Статус
+
+Accepted
+
+Дата
+
+2026-07-13
+
+Решение
+
+Утвердить окончательное название Модуля III:
+
+```text
+Модуль III. Аутентификация и авторизация в ASP.NET Core: Cookies, JWT, OAuth 2.0 и OpenID Connect
+```
+
+Утвердить маршрут Модуля III из 17 глав:
+
+1. Кто обращается к системе: Identity, Authentication и Authorization
+2. Учётная запись, credentials и хранение пользователей
+3. Парольная аутентификация и безопасное хранение паролей
+4. Модель Authentication в ASP.NET Core
+5. Cookie Authentication и аутентифицированная session
+6. Access Token и Bearer Authentication
+7. JWT и проверка token
+8. Refresh Token и жизненный цикл token
+9. Claims, Roles и Permissions
+10. Policy-based и Resource-based Authorization в ASP.NET Core
+11. OAuth 2.0: делегирование доступа, роли и scopes
+12. Authorization Code Flow и PKCE
+13. OpenID Connect и внешние Identity Providers
+14. ASP.NET Core Identity
+15. OpenIddict
+16. Архитектура AuthService и границы distributed system
+17. Полный путь аутентификации и авторизации
+
+Модуль III не строится вокруг ложной модели `Authentication = JWT`. Cookie Authentication и token-based authentication рассматриваются как разные модели. Password Hashing, Cookie Authentication, Access Token, JWT validation и Refresh Token lifecycle разделены на самостоятельные главы, потому что они отвечают на разные инженерные вопросы.
+
+Claims, Roles и Permissions отделяются от Policies, Requirements и Handlers. OAuth 2.0 и OpenID Connect не смешиваются: OAuth 2.0 объясняется как делегирование доступа, а OpenID Connect — как идентификация поверх OAuth 2.0. Authorization Code Flow + PKCE раскрывается отдельной главой.
+
+ASP.NET Core Identity, OpenIddict и AuthService не считаются одним framework:
+
+- ASP.NET Core Identity отвечает за управление пользователями, паролями, ролями, claims и связанными сущностями;
+- OpenIddict является .NET-стеком для OAuth 2.0 / OpenID Connect client, server и token validation scenarios;
+- AuthService является архитектурным вариантом выделения границ authentication/authorization в distributed system, а не обязательным сервисом для каждого проекта.
+
+Security threats и типичные ошибки не получают отдельную изолированную главу. Они раскрываются рядом с соответствующими механизмами и сводятся в итоговой главе.
+
+Границы Модуля III:
+
+- не дублировать Модуль II, где authentication и authorization объяснены как этапы request pipeline;
+- не дублировать Модуль IV, где будет production entry layer;
+- не дублировать Модуль V, где будет Web API execution и общая инфраструктура приложения;
+- не переносить CORS в Модуль III автоматически;
+- раскрывать CSRF там, где он относится к Cookie Authentication и redirect-based flows.
+
+Причина
+
+Authentication и authorization часто ошибочно сводят к JWT, из-за чего теряется различие между установлением identity, хранением credentials, cookie-session моделью, bearer-token моделью, claims-моделью, authorization policies, OAuth 2.0, OpenID Connect и инфраструктурными framework.
+
+Разделение этих тем на отдельные главы позволяет объяснить authentication-систему как инженерную цепочку решений, а не как набор несвязанных библиотек и token-форматов.
+
+Последствия
+
+Модуль III начинается только после отдельного задания на создание структуры и глав. Текущий Decision фиксирует архитектуру и маршрут, но не создаёт главы, папки, схемы или черновики.

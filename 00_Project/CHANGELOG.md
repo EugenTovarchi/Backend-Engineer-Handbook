@@ -8,6 +8,15 @@
 
 ## 2026-07-13
 
+### Архитектура Модуля III
+
+- Утверждено название Модуля III: `Аутентификация и авторизация в ASP.NET Core: Cookies, JWT, OAuth 2.0 и OpenID Connect`.
+- Утверждён маршрут Модуля III из 17 глав.
+- Password Hashing, Cookie Authentication и Authorization Code Flow + PKCE выделены в отдельные главы.
+- OpenIddict добавлен как отдельная глава.
+- ASP.NET Core Identity, OpenIddict и AuthService разведены по ответственности.
+- Зафиксированы границы scope с Модулями II, IV и V.
+
 ### Служебное закрытие Модуля II
 
 - Пользовательский review Модуля II завершён.
