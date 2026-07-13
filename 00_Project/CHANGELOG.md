@@ -8,6 +8,16 @@
 
 ## 2026-07-13
 
+### Технический корректирующий проход глав 1–4 Модуля III
+
+- Выполнен технический корректирующий проход первых четырёх глав Модуля III.
+- Исправлено разделение subject/account/credential/provider.
+- Исправлены последовательность password hasher и результат rehash.
+- Расширены рекомендации NIST SP 800-63B-4 для password verifier.
+- Уточнены Authentication Middleware, `AuthenticateResult`, sign-in/sign-out и cookie behavior.
+- Выполнен языковой микропроход глав 1–4.
+- Главы 1–4 ожидают пользовательское утверждение.
+
 ### Архитектура Модуля III
 
 - Утверждено название Модуля III: `Аутентификация и авторизация в ASP.NET Core: Cookies, JWT, OAuth 2.0 и OpenID Connect`.

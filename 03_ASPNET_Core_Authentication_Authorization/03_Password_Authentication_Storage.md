@@ -103,7 +103,7 @@ Password hashing scheme обычно использует:
 - cost factor / work factor;
 - формат с параметрами и версией.
 
-Salt нужен, чтобы одинаковые пароли у разных пользователей не давали одинаковый stored verifier и чтобы заранее подготовленные таблицы были менее полезны. Salt не должен быть общим для всех пользователей и не обязан быть секретным.
+Salt нужен, чтобы одинаковые пароли у разных пользователей не давали одинаковый stored verifier. Из-за уникального salt заранее подготовленные таблицы нельзя эффективно переиспользовать между разными password records, а догадки приходится проверять отдельно для каждого hash. Salt должен быть уникальным для конкретной записи password hash, но он не является секретом и не заменяет cost factor.
 
 Cost factor нужен, чтобы увеличить цену каждой попытки угадывания. Его выбирают так, чтобы сервер выдерживал нормальную нагрузку, но offline guessing был дорогим. Со временем cost factor приходится повышать.
 
@@ -133,13 +133,20 @@ Argon2 можно встретить как современный password hash
 
 ## NIST: политика паролей
 
-Актуальная линия NIST SP 800-63B-4 для password verifier важна не только про storage, но и про UX политики:
+Актуальная линия NIST SP 800-63B-4 для password verifier важна не только про storage, но и про UX политики. Это guidance NIST, а не универсальный закон для любой системы:
 
-- не выдавать composition rules вроде обязательной смеси регистра, цифр и символов как современную универсальную best practice;
-- не требовать периодическую смену пароля без причины как универсальное правило;
+- минимальная длина password как single factor — 15 characters;
+- минимальная длина password как части MFA — 8 characters;
+- максимальная поддерживаемая длина должна быть не меньше 64 characters;
+- проверять весь password без silent truncation;
+- не выдавать composition rules вроде обязательной смеси регистра, цифр и символов как современную универсальную рекомендацию;
+- не требовать периодическую смену пароля без признаков компрометации как универсальное правило;
 - проверять новые passwords по blocklist известных, распространённых или скомпрометированных значений;
+- разрешать password managers, autofill и paste;
+- выполнять Unicode NFC normalization перед hashing, если система принимает Unicode passwords;
 - использовать rate limiting для неуспешных попыток;
 - хранить passwords в форме, устойчивой к offline attacks: salted password hashing scheme с cost factor;
+- хранить scheme, version и параметры, чтобы поддерживать migration;
 - дополнительный keyed step/secret обсуждать как SHOULD, а не как обязательный `pepper` для каждой системы.
 
 ---
@@ -154,10 +161,12 @@ sequenceDiagram
     participant D as Database
 
     U->>A: password
-    A->>H: verify password against stored hash
-    H->>D: read verifier
+    A->>D: load account and stored hash
+    D-->>A: stored hash
+    A->>H: verify(stored hash, password)
     H-->>A: Failed / Success / SuccessRehashNeeded
-    A-->>U: generic login result
+    A->>D: save replacement hash if required
+    A-->>U: одинаковый ответ о результате входа
 ```
 
 ---
@@ -168,13 +177,13 @@ sequenceDiagram
 
 Дальше приложение не сравнивает строки password. Оно передаёт введённый password и stored hash в password hasher. Если результат успешен, система может создать `ClaimsPrincipal`, cookie или token в следующих этапах. Если result требует rehash, приложение после успешной проверки обновляет stored hash новыми параметрами.
 
-Сообщение об ошибке входа лучше делать generic:
+Сообщение об ошибке входа лучше делать одинаковым:
 
 ```text
 Неверные учётные данные.
 ```
 
-Так система не помогает account enumeration: атакующий не должен легко отличать `email существует, но пароль неверный` от `email не существует`.
+Так система меньше помогает account enumeration: атакующий не должен легко отличать `email существует, но пароль неверный` от `email не существует`. Но одинаковый текст ошибки — только одна мера. Время ответа, rate limiting, lockout, audit side effects и разные HTTP-ответы тоже могут раскрывать существование account, поэтому их нужно проектировать согласованно.
 
 ---
 
@@ -202,23 +211,29 @@ public sealed class PasswordCredentialService
         return _hasher.HashPassword(user, password);
     }
 
-    public bool Verify(AppUser user, string storedHash, string password)
+    public PasswordCheckResult Verify(AppUser user, string storedHash, string password)
     {
         var result = _hasher.VerifyHashedPassword(user, storedHash, password);
 
         if (result == PasswordVerificationResult.SuccessRehashNeeded)
         {
-            var newHash = _hasher.HashPassword(user, password);
-            // Сохранить newHash после успешной проверки.
-            return true;
+            return new PasswordCheckResult(
+                Succeeded: true,
+                ReplacementHash: _hasher.HashPassword(user, password));
         }
 
-        return result == PasswordVerificationResult.Success;
+        return new PasswordCheckResult(
+            Succeeded: result == PasswordVerificationResult.Success,
+            ReplacementHash: null);
     }
 }
+
+public sealed record PasswordCheckResult(
+    bool Succeeded,
+    string? ReplacementHash);
 ```
 
-Код показывает идею. Он не реализует lockout, rate limiting, audit, transaction boundaries или password reset lifecycle.
+Код показывает идею: hasher только проверяет `storedHash` и может вернуть replacement hash. Загрузка account, сохранение нового hash, transaction boundaries, lockout, rate limiting, audit и password reset lifecycle остаются ответственностью приложения.
 
 ---
 
@@ -229,7 +244,7 @@ public sealed class PasswordCredentialService
 Как правильно: использовать password hashing scheme / password-based KDF с salt и cost factor.
 
 Ошибка: использовать один общий salt.
-Почему неверно: одинаковые passwords будут давать одинаковые verifier patterns, а защита от collision и precomputation ухудшается.
+Почему неверно: одинаковые passwords будут давать одинаковые verifier patterns, а заранее подготовленные таблицы станет проще переиспользовать между записями.
 Как правильно: генерировать уникальный случайный salt для каждого password hash.
 
 Ошибка: считать salt secret.
@@ -241,7 +256,7 @@ public sealed class PasswordCredentialService
 Как правильно: хранить verifier, а не обратимо восстановимый секрет.
 
 Ошибка: думать, что сильный password hash решает online brute force.
-Почему неверно: online атаки идут через application endpoint и требуют rate limiting, lockout или похожих controls.
+Почему неверно: online атаки идут через application endpoint и требуют rate limiting, lockout или похожих защитных мер.
 Как правильно: сочетать storage protection с rate limiting и безопасными login errors.
 
 ---
@@ -264,7 +279,7 @@ public sealed class PasswordCredentialService
 <details>
 <summary>Ответ</summary>
 
-Salt делает hash уникальным для конкретного password record. Он не является секретом и хранится вместе с hash. Его задача — предотвращать одинаковые verifier values для одинаковых passwords и усложнять заранее подготовленные атаки.
+Salt делает hash уникальным для конкретного password record. Он не является секретом и хранится вместе с hash. Его задача — предотвращать одинаковые verifier values для одинаковых passwords и мешать переиспользованию заранее подготовленных таблиц между разными записями.
 
 </details>
 
@@ -297,7 +312,7 @@ Salt делает hash уникальным для конкретного passwo
 <details>
 <summary>Ответ</summary>
 
-Нужны generic login errors против account enumeration, rate limiting или lockout против online guessing, blocklist распространённых или скомпрометированных passwords, безопасный reset lifecycle, audit и стратегия rehash/migration параметров.
+Нужны одинаковые ответы о результате входа против account enumeration, rate limiting или lockout против online guessing, blocklist распространённых или скомпрометированных passwords, безопасный reset lifecycle, audit и стратегия rehash/migration параметров. При этом нужно следить, чтобы timing, lockout и audit side effects сами не раскрывали существование account.
 
 </details>
 
@@ -305,7 +320,7 @@ Salt делает hash уникальным для конкретного passwo
 
 ## Ответ для собеседования
 
-Парольная authentication должна проверять password, не сохраняя исходный password. Для этого система хранит password verifier, созданный password hashing scheme: password-based KDF с уникальным salt, cost factor и форматом, который позволяет хранить параметры и версию. Salt не является secret, он хранится вместе с hash. Cost factor делает offline guessing дороже и должен обновляться со временем. В ASP.NET Core Identity для этого есть `IPasswordHasher<TUser>` и `PasswordHasher<TUser>`, а `SuccessRehashNeeded` позволяет после успешной проверки обновить устаревший hash. При этом password hashing не заменяет rate limiting, lockout, blocklist и безопасные generic login errors.
+Парольная authentication должна проверять password, не сохраняя исходный password. Для этого система хранит password verifier, созданный password hashing scheme: password-based KDF с уникальным salt, cost factor и форматом, который позволяет хранить параметры и версию. Salt не является secret, он хранится вместе с hash, не заменяет cost factor и не является главным источником дороговизны проверки. Cost factor делает offline guessing дороже и должен обновляться со временем. В ASP.NET Core Identity для этого есть `IPasswordHasher<TUser>` и `PasswordHasher<TUser>`, а `SuccessRehashNeeded` позволяет после успешной проверки вернуть replacement hash и сохранить его на уровне приложения. При этом password hashing не заменяет rate limiting, lockout, blocklist и безопасные одинаковые ответы о результате входа.
 
 ---
 
@@ -321,9 +336,9 @@ Salt делает hash уникальным для конкретного passwo
 - Формат должен хранить параметры и version marker.
 - `IPasswordHasher<TUser>` создаёт и проверяет hash.
 - `SuccessRehashNeeded` помогает миграции.
-- Generic login error снижает account enumeration.
+- Одинаковый ответ о результате входа снижает account enumeration.
 - Rate limiting нужен против online guessing.
-- NIST SP 800-63B-4 не поддерживает composition rules как универсальную best practice.
+- NIST SP 800-63B-4 не поддерживает composition rules как универсальную рекомендацию.
 
 ---
 

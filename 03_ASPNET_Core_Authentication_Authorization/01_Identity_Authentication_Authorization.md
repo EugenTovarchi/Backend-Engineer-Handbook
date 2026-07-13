@@ -35,7 +35,7 @@
 кто вообще обращается к системе и как backend принимает решение о доступе?
 ```
 
-Запрос может отправить человек в браузере, мобильное приложение, backend-сервис, scheduled job или внешний integration client. Система не должна угадывать, кто это. Она должна получить учётные данные, проверить их, построить представление субъекта и только потом решать, что ему разрешено.
+Запрос может отправить человек в браузере, мобильное приложение, backend-сервис, фоновая задача по расписанию или внешний интеграционный клиент. Система не должна угадывать, кто это. Она должна получить учётные данные, проверить их, построить представление субъекта и только потом решать, что ему разрешено.
 
 ---
 
@@ -72,7 +72,7 @@
 
 **Subject (субъект обращения — человек, сервис или другой участник, от имени которого выполняется действие)** пытается обратиться к системе.
 
-**Credentials (учётные данные — доказательство или способ подтвердить контроль над identity)** могут быть паролем, cookie, bearer token, внешним login provider или другим механизмом.
+**Credentials (учётные данные — проверяемый материал, который подтверждает контроль над identity или способом входа)** могут быть паролем, cookie, bearer token, client certificate, client secret или другим проверяемым credential.
 
 **Authentication (аутентификация — процесс установления identity по предъявленным credentials)** отвечает на вопрос `кто это?`.
 
@@ -97,18 +97,22 @@
 Базовая модель выглядит так:
 
 ```text
-Subject / Account
+Subject
     ↓ presents
-Credentials
+Credential
     ↓ verified by
 Authentication
+    ↓ may load/link
+Account or external identity record
     ↓ produces
-Identity / Principal
+Principal
     ↓ evaluated by
 Authorization
 ```
 
 **Account (учётная запись — сохранённая запись системы о субъекте и его способах входа)** обычно живёт в базе данных. Account может принадлежать человеку, сервису или организации.
+
+**Identity Provider (поставщик identity — внешняя сторона, которая аутентифицирует субъекта и возвращает результат по протоколу)** не является credential. Credential или protocol artifact — это проверяемый материал: password, cookie, bearer token, client certificate, authorization code или ID Token в своём назначении. **External login link (локальная связь внешней identity — сопоставление `issuer/provider + subject` с внутренним `UserId`)** тоже не является credential. Подробно внешний provider будет разобран в главе [OpenID Connect и внешние Identity Providers](./13_OpenID_Connect_External_Identity_Providers.md).
 
 **Identity (установленная личность — результат успешной authentication)** не обязана быть ровно одной строкой таблицы users. Это представление того, что система смогла установить о субъекте.
 
@@ -129,7 +133,9 @@ Authorization
 | Identified | система знает некоторый идентификатор, но это не всегда полноценная authentication |
 | Authenticated | credentials проверены, identity установлена |
 
-Login и registration — это сценарии приложения. Registration создаёт account или способ входа. Login предъявляет credentials и запускает authentication. Но authentication как механизм шире, чем endpoint `/login`: cookie, bearer token, client certificate или внешний provider тоже могут участвовать в установлении identity.
+`Identified` здесь — учебное концептуальное состояние этой главы, а не отдельный статус или API ASP.NET Core. Наличие идентификатора ещё не доказывает successful authentication. `ClaimsIdentity` может существовать, но `IsAuthenticated` зависит от authentication type и результата конкретного механизма.
+
+Login и registration — это сценарии приложения. Registration создаёт account или способ входа. Login предъявляет credentials и запускает authentication. Но authentication как механизм шире, чем endpoint `/login`: cookie, bearer token, client certificate, client secret или protocol artifact от внешнего provider тоже могут участвовать в установлении identity.
 
 ---
 
@@ -139,7 +145,8 @@ Login и registration — это сценарии приложения. Registra
 flowchart TD
     S[Subject] --> C[Credentials]
     C --> A[Authentication]
-    A --> P[ClaimsPrincipal]
+    A --> R[Account or external identity record]
+    R --> P[ClaimsPrincipal]
     P --> Z[Authorization]
     Z --> R[Allow / Challenge / Forbid]
 ```
@@ -165,7 +172,7 @@ Authorization: Bearer <access-token>
 4. положить его в `HttpContext.User`;
 5. проверить, может ли этот principal читать заказ `42`.
 
-Если credential отсутствует или невалиден, защищённый endpoint обычно приводит к challenge. Если пользователь установлен, но не имеет доступа, система обычно возвращает forbid. В [Модуле II](../02_ASPNET_Core_Request_Pipeline/06_Authorization_In_Pipeline.md) это было разобрано как часть pipeline.
+Если credential отсутствует или невалиден, защищённый endpoint обычно приводит к challenge. Challenge обычно связан с отсутствием подходящей authenticated identity, но форма ответа зависит от authentication scheme. Если principal установлен, но доступ запрещён, система обычно инициирует forbid. В [Модуле II](../02_ASPNET_Core_Request_Pipeline/06_Authorization_In_Pipeline.md) это было разобрано как часть pipeline, а scheme-specific ответы будут уточнены в [главе 4](./04_ASPNET_Core_Authentication_Model.md).
 
 ---
 
@@ -186,10 +193,10 @@ public sealed record RequestSubject(
 
 Ошибка: считать identity строкой из таблицы users.
 Почему неверно: identity — это установленное представление субъекта в текущем контексте, а user row — способ хранения данных.
-Как правильно: отделять account storage от runtime-представления пользователя.
+Как правильно: отделять хранение account от представления пользователя во время выполнения запроса.
 
 Ошибка: считать login endpoint всей authentication.
-Почему неверно: authentication может выполняться по cookie, bearer token, внешнему provider или другой схеме.
+Почему неверно: authentication может выполняться по cookie, bearer token, protocol artifact от внешнего provider или другой схеме.
 Как правильно: login рассматривать как один из сценариев получения credential или session.
 
 Ошибка: смешивать authentication и authorization.
@@ -197,7 +204,7 @@ public sealed record RequestSubject(
 Как правильно: сначала установить `кто это`, затем отдельно проверить `что ему разрешено`.
 
 Ошибка: считать credentials только паролем.
-Почему неверно: credential может быть cookie, access token, client secret, certificate или внешний login.
+Почему неверно: credential может быть cookie, access token, client secret, certificate или другой проверяемый материал. Внешний provider и локальная связь с ним — отдельные сущности.
 Как правильно: пароль рассматривать как один из способов подтвердить контроль.
 
 Ошибка: думать, что `ClaimsPrincipal` всегда представляет только человека.
@@ -224,7 +231,7 @@ Authentication устанавливает, кто обращается к сис
 <details>
 <summary>Ответ</summary>
 
-Login endpoint — это сценарий, где пользователь предъявляет credentials, например пароль. Authentication шире: она может происходить по cookie, bearer token, внешнему provider или другой схеме при каждом запросе.
+Login endpoint — это сценарий, где пользователь предъявляет credentials, например пароль. Authentication шире: она может происходить по cookie, bearer token, client certificate или protocol artifact от внешнего provider при каждом запросе.
 
 </details>
 
@@ -235,7 +242,7 @@ Login endpoint — это сценарий, где пользователь пр
 <details>
 <summary>Ответ</summary>
 
-В `HttpContext.User` попадает `ClaimsPrincipal`: runtime-представление субъекта текущего запроса. Он содержит одну или несколько identities и claims, которые дальше использует authorization.
+В `HttpContext.User` попадает `ClaimsPrincipal`: представление субъекта текущего запроса во время выполнения. Он содержит одну или несколько identities и claims, которые дальше использует authorization.
 
 </details>
 
@@ -257,7 +264,7 @@ Login endpoint — это сценарий, где пользователь пр
 <details>
 <summary>Ответ</summary>
 
-Account — это хранимая запись системы. Credentials — способы подтвердить контроль над account или identity. Principal — runtime-представление субъекта в конкретном запросе. Разделение позволяет поддерживать несколько способов входа, внешних providers, сервисных клиентов, отзыв credentials и разные модели authorization без смешивания всех данных в одной записи.
+Account — это хранимая запись системы. Credentials — способы подтвердить контроль над account или identity. Principal — представление субъекта в конкретном запросе во время выполнения. Разделение позволяет поддерживать несколько способов входа, внешних providers, сервисных клиентов, отзыв credentials и разные модели authorization без смешивания всех данных в одной записи.
 
 </details>
 
@@ -265,7 +272,7 @@ Account — это хранимая запись системы. Credentials —
 
 ## Ответ для собеседования
 
-В authentication-системе сначала нужно понять, кто обращается к backend: человек, сервис или другой клиент. Этот субъект предъявляет credentials — пароль, cookie, bearer token или другой способ подтвердить контроль. Authentication проверяет credentials и строит identity, которая в ASP.NET Core обычно представлена через `ClaimsPrincipal` в `HttpContext.User`. Authorization — отдельный этап: он проверяет, разрешено ли этому principal выполнить действие или получить ресурс. Поэтому login endpoint, JWT, cookie и password storage — это части общей системы, но ни одна из них не является всей authentication сама по себе.
+В authentication-системе сначала нужно понять, кто обращается к backend: человек, сервис или другой клиент. Этот субъект предъявляет credentials — password, cookie, bearer token, client certificate, client secret или другой проверяемый материал. Identity Provider и external login link не являются credential: provider аутентифицирует субъекта, а локальная связь сопоставляет внешний `issuer/provider + subject` с локальным `UserId`. Authentication проверяет credentials и строит identity, которая в ASP.NET Core обычно представлена через `ClaimsPrincipal` в `HttpContext.User`. Authorization — отдельный этап: он проверяет, разрешено ли этому principal выполнить действие или получить ресурс.
 
 ---
 
