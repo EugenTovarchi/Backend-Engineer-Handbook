@@ -101,9 +101,7 @@ Subject
     ↓ presents
 Credential
     ↓
-Authentication
-    ↑ may consult
-Account or external identity record
+Authentication ← may consult — Account or external identity record
     ↓ produces
 Principal
     ↓ evaluated by
