@@ -13,9 +13,7 @@
 **Текущая глава:** Cookie
 
 **Текущий вопрос:**
-Пользователь ввёл пароль один раз.
-HTTP не помнит прошлый request.
-Как не просить пароль на каждой странице?
+Как браузер сохраняет состояние входа между HTTP-запросами и что именно проверяет Cookie Authentication?
 
 ──────────────────────────────────────────────
 
@@ -26,6 +24,14 @@ HTTP не помнит прошлый request.
 ## Исходная ситуация
 
 В предыдущей главе мы разобрали общую модель ASP.NET Core Authentication: scheme, handler, `AuthenticateAsync`, `SignInAsync`, `SignOutAsync` и `ClaimsPrincipal`.
+
+Практическая проблема простая:
+
+```text
+Пользователь ввёл пароль один раз.
+HTTP не помнит прошлый request.
+Как не просить пароль на каждой странице?
+```
 
 Теперь смотрим на конкретную browser-oriented схему:
 
@@ -65,7 +71,7 @@ Cookie Authentication проверяет authentication cookie.
 
 Password проверяется раньше: в login endpoint, application service или ASP.NET Core Identity. После успешной проверки приложение создаёт `ClaimsPrincipal` и вызывает `SignInAsync`. Только после этого cookie scheme записывает cookie.
 
-Эта глава отделяет cookie-session модель от bearer-token модели следующей главы. Cookie удобна для browser UI, но приносит свои production-вопросы: CSRF, stale claims, revocation, Data Protection keys, размер cookie и redirect/401 behavior для API.
+Эта глава отделяет cookie-session модель от bearer-token модели следующей главы. Cookie удобна для browser UI, но приносит свои production-вопросы: CSRF, stale claims, revocation, Data Protection keys, размер cookie и поведение redirect/401 для API.
 
 ---
 
@@ -165,6 +171,8 @@ ASP.NET Core Session middleware отвечает на другой вопрос:
 
 `ITicketStore` — ещё отдельная модель. Он позволяет хранить ticket на сервере, а в cookie оставить только ключ. Это может помочь с размером cookie и отзывом, но добавляет зависимость от server storage.
 
+В ASP.NET Core это настраивается через `CookieAuthenticationOptions.SessionStore`. Свойство принимает `ITicketStore`: cookie хранит session identifier/key, а сам authentication ticket живёт на server side. Такой подход добавляет server-side dependency, cleanup старых tickets и отдельную политику отказоустойчивости. Это всё ещё не ASP.NET Core Session middleware.
+
 ---
 
 ## ASP.NET Core: регистрация cookie scheme
@@ -186,6 +194,8 @@ builder.Services
         options.Cookie.SameSite = SameSiteMode.Lax;
     });
 ```
+
+`SameSiteMode.Lax` здесь — учебное значение, а не универсальная production-настройка. SameSite выбирают под конкретный flow: слишком строгая настройка может сломать external redirect-based login, а слишком мягкая увеличивает CSRF-риск. SameSite уменьшает часть сценариев автоматической отправки cookie, но не заменяет antiforgery protection.
 
 Что настраивает разработчик:
 
@@ -260,8 +270,10 @@ await HttpContext.SignInAsync(
     principal,
     new AuthenticationProperties
     {
-        IsPersistent = true,
-        ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
+        IsPersistent = rememberMe,
+        ExpiresUtc = rememberMe
+            ? DateTimeOffset.UtcNow.AddHours(8)
+            : null
     });
 ```
 
@@ -274,9 +286,9 @@ Cookie handler:
 3. защищает ticket через Data Protection;
 4. добавляет `Set-Cookie` в response.
 
-`IsPersistent = true` означает, что cookie может пережить закрытие браузера. Без persistent cookie браузерная session cookie обычно удаляется при закрытии браузера, но сервер не получает надёжное событие "браузер закрыт".
+`IsPersistent = rememberMe` показывает, что persistent login должен быть осознанным выбором пользователя, например checkbox `Remember me`. Если `rememberMe` выключен, browser session cookie обычно удаляется при закрытии браузера, но сервер не получает надёжное событие "браузер закрыт".
 
-`ExpiresUtc` задаёт expiration конкретного ticket. `ExpireTimeSpan` задаёт общий срок по options. В production часто нужен ещё и absolute session lifetime, чтобы sliding expiration не продлевал session бесконечно.
+8 часов в примере — учебное значение, а не рекомендация для всех систем. `ExpiresUtc` задаёт expiration конкретного ticket. `ExpireTimeSpan` задаёт общий срок по options, а server-side ticket expiration проверяется отдельно от того, пережила ли browser cookie закрытие браузера. В production часто нужен ещё и absolute session lifetime с дополнительной логикой, чтобы sliding expiration не продлевал session бесконечно.
 
 ---
 
@@ -406,12 +418,15 @@ App instance B receives next request
 
 В production с несколькими instances нужны:
 
-- общий Data Protection key ring;
-- защищённое хранение keys;
+- общий Data Protection key repository / key ring;
+- одинаковый application discriminator, обычно через `SetApplicationName`, для instances одного приложения;
+- отдельные application names для разных приложений, чтобы они случайно не разделяли protected payloads только из-за общего storage;
+- ограниченные permissions на key repository;
+- защита keys at rest, если этого требует среда;
 - понятная rotation policy;
-- backup keys.
+- стратегия сохранения старых keys на срок жизни cookies.
 
-Потеря keys часто выглядит как массовый logout: старые cookies становятся нечитаемыми. Компрометация keys хуже, потому что атакующий может работать с protected payloads в рамках соответствующих purposes.
+Потеря старых keys часто выглядит как массовый logout: старые cookies становятся нечитаемыми. Ручной backup не должен быть единственной стратегией; key storage и rotation нужно проектировать как часть эксплуатации. Компрометация keys хуже, потому что атакующий может работать с protected payloads в рамках соответствующих purposes.
 
 ---
 
@@ -456,7 +471,7 @@ Browser attaches bank.example cookies automatically
 
 ---
 
-## ASP.NET Core 10 и redirect/401 behavior
+## ASP.NET Core 10 и поведение redirect/401
 
 Cookie scheme исторически часто делает redirect:
 
@@ -536,7 +551,7 @@ sequenceDiagram
 
 Ошибка: потерять Data Protection keys.
 Почему неверно: старые cookies могут стать нечитаемыми.
-Как правильно: настроить общий key ring и backup.
+Как правильно: настроить общий key ring, совместимый application name для instances одного приложения, защищённый key repository и продуманную rotation/storage policy.
 
 Ошибка: включить бесконечный sliding expiration.
 Почему неверно: активная session может жить слишком долго.
@@ -546,9 +561,9 @@ sequenceDiagram
 Почему неверно: logout обычно удаляет local cookie, но не отзывает все copies/sessions сам по себе.
 Как правильно: использовать server-side state для global revocation.
 
-Ошибка: не учесть redirect/401 behavior.
+Ошибка: не учесть поведение redirect/401.
 Почему неверно: API может получить redirect вместо ожидаемого status code.
-Как правильно: проверить cookie behavior для UI и API endpoints.
+Как правильно: проверить поведение cookie для UI и API endpoints.
 
 ---
 
@@ -604,6 +619,7 @@ SameSite уменьшает часть cross-site отправки cookies, но
 <summary>Ответ</summary>
 
 Нужно настроить общий Data Protection key ring, чтобы instance B мог прочитать cookie, созданную instance A. Также нужна политика rotation/backup keys, security version или ticket store для отзыва, ограниченный lifetime, CSRF protection и проверка поведения redirect/401 для UI и API endpoints.
+Instances одного приложения должны использовать совместимый application name/discriminator. Разные приложения не должны случайно разделять protected payloads только потому, что используют один storage для keys.
 
 </details>
 
@@ -611,7 +627,7 @@ SameSite уменьшает часть cross-site отправки cookies, но
 
 ## Ответ для собеседования
 
-Cookie Authentication в ASP.NET Core — это authentication scheme для browser-сценариев. После успешной проверки credentials приложение создаёт `ClaimsPrincipal` и вызывает `SignInAsync`. Cookie handler создаёт `AuthenticationTicket`, защищает его через Data Protection и отправляет authentication cookie браузеру. На следующих requests browser автоматически прикладывает cookie, handler выполняет `AuthenticateAsync`, восстанавливает principal и Authentication Middleware кладёт его в `HttpContext.User`. Cookie Authentication не равна ASP.NET Core Session и не проверяет password. В production нужно учитывать lifetime, sliding expiration, absolute session limits, Data Protection key ring, stale claims, revocation, CSRF, cookie attributes, размер cookie и redirect/401 behavior для API.
+Cookie Authentication в ASP.NET Core — это authentication scheme для browser-сценариев. После успешной проверки credentials приложение создаёт `ClaimsPrincipal` и вызывает `SignInAsync`. Cookie handler создаёт `AuthenticationTicket`, защищает его через Data Protection и отправляет authentication cookie браузеру. На следующих requests browser автоматически прикладывает cookie, handler выполняет `AuthenticateAsync`, восстанавливает principal и Authentication Middleware кладёт его в `HttpContext.User`. Cookie Authentication не равна ASP.NET Core Session и не проверяет password. В production нужно учитывать lifetime, sliding expiration, absolute session limits, Data Protection key ring, stale claims, revocation, CSRF, cookie attributes, размер cookie и поведение redirect/401 для API.
 
 ---
 
@@ -623,6 +639,7 @@ Cookie Authentication в ASP.NET Core — это authentication scheme для br
 - `SignOutAsync` просит удалить cookie.
 - `AuthenticationTicket` содержит principal, properties и scheme.
 - Data Protection защищает ticket.
+- Multi-instance setup требует общий key ring и совместимый application name.
 - Browser отправляет cookie автоматически.
 - CSRF связан с автоматической отправкой cookie.
 - `HttpOnly` не устраняет XSS.
@@ -631,7 +648,7 @@ Cookie Authentication в ASP.NET Core — это authentication scheme для br
 - `ValidatePrincipal` помогает бороться со stale claims.
 - `ITicketStore` переносит ticket на server side.
 - Logout не всегда означает global revocation.
-- ASP.NET Core 10 меняет cookie redirect behavior для known API endpoints.
+- ASP.NET Core 10 меняет поведение cookie redirects для known API endpoints.
 
 ---
 

@@ -8,6 +8,16 @@
 
 ## 2026-07-14
 
+### Технический корректирующий проход глав 5–8 Модуля III
+
+- Выполнен технический корректирующий проход глав 5–8 Модуля III.
+- Восстановлены утверждённые вопросы в навигационных шапках глав.
+- Уточнены persistent cookie, SameSite и multi-instance Data Protection.
+- Уточнены роли bearer/resource server и JWT validation guidance.
+- Добавлено предупреждение про public JWT decoders.
+- Исправлены concurrency, reuse, commit ordering и verifier strategy в refresh token rotation.
+- Главы 1–8 Модуля III ожидают пользовательский review и ещё не утверждены.
+
 ### Главы 5–8 Модуля III
 
 - Написаны первичные полные версии глав 5–8 Модуля III.

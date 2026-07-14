@@ -78,6 +78,10 @@ PROJECT_STATUS
   - первый технический корректирующий проход глав 1–4 выполнен;
   - исправлены subject/account/provider/credential, password hashing sequence, NIST SP 800-63B-4 guidance и поток ASP.NET Core Authentication;
   - главы 5–8 написаны как первичные полные версии в понятном формате Модуля I;
+  - технический корректирующий проход глав 5–8 выполнен;
+  - восстановлены утверждённые вопросы в навигационных шапках глав 5–8;
+  - уточнены persistent cookie, SameSite, multi-instance Data Protection, bearer/resource-server boundaries и JWT validation guidance;
+  - исправлена модель Refresh Token rotation: one-time update защищён concurrency token, revoked/reused разделены, access token создаётся до commit, verifier strategy описана как deterministic one-way verifier;
   - главы 1–8 ожидают пользовательский и технический review и ещё не утверждены;
   - главы 9–17 содержат только архитектурный каркас.
 
@@ -162,6 +166,8 @@ Kestrel → HttpContext → Middleware → Routing → Authentication → Author
 8. `08_Refresh_Token_Lifecycle.md`
 
 Главы 5–8 написаны в формате подачи Модуля I: сначала проблема и базовый flow простыми словами, затем ASP.NET Core/API и только после этого security и production-ограничения.
+
+Главы 5–8 прошли первый технический корректирующий проход: восстановлены утверждённые вопросы в шапках, уточнены Cookie/Data Protection/JWT детали и исправлена concurrency/reliability model Refresh Token rotation.
 
 Главы 1–8 готовы к review, но ещё не утверждены пользователем. Главы 9–17 пока являются только архитектурным каркасом. Главы 9–17 не писать без отдельного задания. Модуль II не менять без отдельного запроса.
 
